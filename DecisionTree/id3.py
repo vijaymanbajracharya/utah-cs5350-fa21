@@ -11,8 +11,6 @@ class DecisionTree:
 
     def cross_entropy(self, attribute, atr_name):
         freq = attribute.groupby([atr_name,"label"]).size().reset_index(name="Count")
-        print(freq)
-        print("***")
         pass
 
     def information_gain(self, subset, atr_name):
