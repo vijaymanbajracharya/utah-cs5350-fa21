@@ -6,6 +6,7 @@ class Node:
     def __init__(self):
         self.value = None
         self.edge = None
+        self.feature_value = None
 
 class DecisionTreeClassifier:
 
@@ -84,6 +85,7 @@ class DecisionTreeClassifier:
 
             for branch in np.unique(data[best_attribute]):
                 child = Node()
+                child.feature_value = branch
                 node.edge.append(child)
                 subset = data.loc[data[best_attribute] == branch]
                 child = self.create_tree(subset, train, attributes, labels, child, depth)
@@ -109,7 +111,8 @@ if __name__ == "__main__":
     train = pd.read_csv("utah-cs5350-fa21/DecisionTree/train.csv", names=table)
     test = pd.read_csv("utah-cs5350-fa21/DecisionTree/test.csv", names=table)
 
-    tree = DecisionTreeClassifier().create_tree(train, train, attributes, labels)
+    root = DecisionTreeClassifier().create_tree(train, train, attributes, labels)
+    pass
 
 
 
