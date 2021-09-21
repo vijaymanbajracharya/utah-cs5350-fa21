@@ -2,6 +2,8 @@
 import pandas as pd
 import numpy as np
 
+MAX_DEPTH = 10
+
 class Node:
     def __init__(self):
         self.value = None
@@ -9,7 +11,6 @@ class Node:
         self.feature_value = None
 
 class DecisionTreeClassifier:
-
     def cross_entropy(self, attribute, atr_name):
         # Get the number of rows
         num_train = attribute.shape[0]
@@ -49,27 +50,35 @@ class DecisionTreeClassifier:
         # Return the information gain
         return total_entropy - atr_entropy
 
+    def majority_error(self, subset, atr_name):
+        # Calculate the majority error of the whole subset
+        pass
 
-    def create_tree(self, data, train, attributes, labels, node=None, depth=None):
+    def gini_index(self, subset, atr_name):
+        # Calculate the gini index of the whole subset
+        pass
+
+
+    def create_tree(self, data, train, attributes, labels, node=None, depth=0):
         # Base case check for same labels
+        global MAX_DEPTH
+        if node is None:
+            node = Node()
+
         values, counts = np.unique(data["label"], return_counts=True)
         if len(counts) <= 1:
             # Return the label as a 
-            if not node:
-                node = Node()
             node.value = values[0]
             return node
         # Base case check for empty attributes
         elif len(attributes) < 1:
             # Return most common label
-            if not node:
-                node = Node()
+            node.value = values[np.argmax(counts)]
+            return node
+        elif depth == MAX_DEPTH:
             node.value = values[np.argmax(counts)]
             return node
         else:
-            if not node:
-                node = Node()
-
             # Find attribute that gives maximum information gain
             info_gain = {}
             for atr_name in attributes:
@@ -88,9 +97,12 @@ class DecisionTreeClassifier:
                 child.feature_value = branch
                 node.edge.append(child)
                 subset = data.loc[data[best_attribute] == branch]
-                child = self.create_tree(subset, train, attributes, labels, child, depth)
+                child = self.create_tree(subset, train, attributes, labels, child, depth=depth+1)
 
             return node
+
+    def predict(self, test, root):
+        pass
 
 
 if __name__ == "__main__":
