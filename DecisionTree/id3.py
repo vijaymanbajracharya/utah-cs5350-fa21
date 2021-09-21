@@ -47,9 +47,6 @@ class DecisionTreeClassifier:
         index = subset.columns.get_loc(atr_name)
         atr_entropy = self.cross_entropy(subset.iloc[:, np.r_[index,6]], atr_name)
 
-        # DEBUG PORTION
-        self.ME_gain(subset, atr_name)
-
         # Return the information gain
         return total_entropy - atr_entropy
 
@@ -90,12 +87,50 @@ class DecisionTreeClassifier:
         
         return total_ME - atr_ME
 
-    def gini_index():
-        pass
+    def gini_index(self, attribute, atr_name):
+         # Get the number of rows
+        num_train = attribute.shape[0]
+
+        # Grouping to make it easier to calculate probabilities
+        freq_by_atr = attribute.groupby([atr_name]).size().reset_index(name="Count")
+        freq_by_row = attribute.groupby([atr_name,"label"]).size().reset_index(name="Count")
+
+        total_gini = 0.0
+        feature_counts = {}
+
+        # Count the total for each value
+        for index, row in freq_by_atr.iterrows():
+            feature_counts[row[atr_name]] = row["Count"]
+        
+        for keys in feature_counts.keys():
+            freq_by_atrvalue = freq_by_row.loc[freq_by_row[atr_name] == keys]
+            sqaured_sum = 0.0
+            for index, row in freq_by_atrvalue.iterrows():
+                prob = row["Count"]/feature_counts[row[atr_name]]
+                sqaured_sum += np.square(prob)
+            
+            total_gini += (1-sqaured_sum) * (feature_counts[row[atr_name]]/num_train)
+
+        return total_gini
+
+        
 
     def gini_gain(self, subset, atr_name):
         # Calculate the gini index of the whole subset
-        pass
+        values, counts = np.unique(subset["label"], return_counts=True)
+        sum_counts = np.sum(counts)
+        squared_sum = 0.0
+        for i in range(len(counts)):
+            prob = counts[i]/sum_counts
+            squared_sum += np.square(prob)
+        
+        total_gini = 1 - squared_sum
+
+        # Calculate gini index of particular attribute
+        index = subset.columns.get_loc(atr_name)
+        atr_gini = self.gini_index(subset.iloc[:, np.r_[index,6]], atr_name)
+
+        return total_gini - atr_gini
 
 
     def create_tree(self, data, train, attributes, labels, node=None, depth=0):
