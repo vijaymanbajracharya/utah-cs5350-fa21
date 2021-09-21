@@ -47,14 +47,53 @@ class DecisionTreeClassifier:
         index = subset.columns.get_loc(atr_name)
         atr_entropy = self.cross_entropy(subset.iloc[:, np.r_[index,6]], atr_name)
 
+        # DEBUG PORTION
+        self.ME_gain(subset, atr_name)
+
         # Return the information gain
         return total_entropy - atr_entropy
 
-    def majority_error(self, subset, atr_name):
+    def majority_error(self, attribute, atr_name):
+        # Get the number of rows
+        num_train = attribute.shape[0]
+
+        # Grouping to make it easier to calculate probabilities
+        freq_by_atr = attribute.groupby([atr_name]).size().reset_index(name="Count")
+        freq_by_row = attribute.groupby([atr_name,"label"]).size().reset_index(name="Count")
+
+        total_ME = 0.0
+        feature_counts = {}
+
+        # Count the total for each value
+        for index, row in freq_by_atr.iterrows():
+            feature_counts[row[atr_name]] = row["Count"] 
+
+        # Find the max of each feature value
+        for keys in feature_counts.keys():
+            freq_by_atrvalue = freq_by_row.loc[freq_by_row[atr_name] == keys]
+            majority = freq_by_atrvalue["Count"].max()
+            error = (feature_counts[keys]-majority)/feature_counts[keys]
+            total_ME += error * (feature_counts[keys]/num_train) 
+
+        return total_ME
+
+    def ME_gain(self, subset, atr_name):
         # Calculate the majority error of the whole subset
+        values, counts = np.unique(subset["label"], return_counts=True)
+        majority = max(counts)
+        sum_counts = np.sum(counts)
+        total_ME = (sum_counts-majority) / sum_counts
+
+        # Calculate ME of particular attribute
+        index = subset.columns.get_loc(atr_name)
+        atr_ME = self.majority_error(subset.iloc[:, np.r_[index,6]], atr_name)
+        
+        return total_ME - atr_ME
+
+    def gini_index():
         pass
 
-    def gini_index(self, subset, atr_name):
+    def gini_gain(self, subset, atr_name):
         # Calculate the gini index of the whole subset
         pass
 
