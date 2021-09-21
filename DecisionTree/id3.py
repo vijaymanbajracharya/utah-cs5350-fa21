@@ -186,7 +186,12 @@ class DecisionTreeClassifier:
         return pred
     
     def accruacy(self, pred, data):
-        pass
+        num_correct = 0
+        total = data.shape[0]
+        for index, row in data.iterrows():
+            if pred[index] == row['label']:
+                num_correct += 1
+        return num_correct/total
 
 if __name__ == "__main__":
     cols = '''buying,
@@ -212,6 +217,14 @@ if __name__ == "__main__":
         pred[index] = DecisionTreeClassifier().predict(row, root)
 
     test_accuracy = DecisionTreeClassifier().accruacy(pred, test)
+    print(f"Test Accuracy: {test_accuracy*100}")
+
+    pred = {}
+    for index, row in train.iterrows():
+        pred[index] = DecisionTreeClassifier().predict(row, root)
+
+    train_accuracy = DecisionTreeClassifier().accruacy(pred, train)
+    print(f"Train Accuracy: {train_accuracy*100}")
 
 
 
