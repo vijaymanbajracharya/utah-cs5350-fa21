@@ -156,7 +156,7 @@ class DecisionTreeClassifier:
             # Find attribute that gives maximum information gain
             info_gain = {}
             for atr_name in attributes:
-                info_gain[atr_name] = self.information_gain(data, atr_name)
+                info_gain[atr_name] = self.gini_gain(data, atr_name) # Change info gain strategy here
             best_attribute = max(info_gain, key=info_gain.get)
 
             # Create tree with best_attribute at root
@@ -175,9 +175,18 @@ class DecisionTreeClassifier:
 
             return node
 
-    def predict(self, test, root):
+    def predict(self, row, root):
+        value = row[root.value]
+        for branches in root.edge:
+            if branches.feature_value == value:
+                if branches.edge is None:
+                    return branches.value
+                else:
+                    pred = self.predict(row, branches)
+        return pred
+    
+    def accruacy(self, pred, data):
         pass
-
 
 if __name__ == "__main__":
     cols = '''buying,
@@ -198,7 +207,11 @@ if __name__ == "__main__":
     test = pd.read_csv("utah-cs5350-fa21/DecisionTree/test.csv", names=table)
 
     root = DecisionTreeClassifier().create_tree(train, train, attributes, labels)
-    pass
+    pred = {}
+    for index, row in test.iterrows():
+        pred[index] = DecisionTreeClassifier().predict(row, root)
+
+    test_accuracy = DecisionTreeClassifier().accruacy(pred, test)
 
 
 
