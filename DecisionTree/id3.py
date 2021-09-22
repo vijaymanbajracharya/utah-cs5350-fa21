@@ -2,7 +2,7 @@
 import pandas as pd
 import numpy as np
 
-MAX_DEPTH = 3
+MAX_DEPTH = 6
 
 class Node:
     def __init__(self):
@@ -133,10 +133,9 @@ class DecisionTreeClassifier:
         return total_gini - atr_gini
 
 
-    def create_tree(self, data, train, attributes, labels, node=None, depth=0, gain="info_gain", max_depth=6):
+    def create_tree(self, data, train, attributes, labels, node=None, depth=0, gain="info_gain"):
         # Base case check for same labels
         global MAX_DEPTH
-        MAX_DEPTH = max_depth
         if node is None:
             node = Node()
 
@@ -181,7 +180,7 @@ class DecisionTreeClassifier:
                         # Remove best_attribute from attributes list
                         attributes.remove(best_attribute)
 
-                    child = self.create_tree(subset, train, attributes.copy(), labels, child, depth=depth+1, gain=gain, max_depth=max_depth)
+                    child = self.create_tree(subset, train, attributes.copy(), labels, child, depth=depth+1, gain=gain)
 
             return node
 
@@ -221,24 +220,22 @@ if __name__ == "__main__":
     train = pd.read_csv("utah-cs5350-fa21/DecisionTree/train.csv", names=table)
     test = pd.read_csv("utah-cs5350-fa21/DecisionTree/test.csv", names=table)
 
-    root_IG = DecisionTreeClassifier().create_tree(train, train, attributes, labels, gain="info_gain")
-    root_gini = DecisionTreeClassifier().create_tree(train, train, attributes, labels, gain="gini_index")
-    root_ME = DecisionTreeClassifier().create_tree(train, train, attributes, labels, gain="majority_error")
+    root = DecisionTreeClassifier().create_tree(train, train, attributes, labels, gain="info_gain")
 
     # Accuracies for Information Gain
     test_pred = {}
     for index, row in test.iterrows():
-        test_pred[index] = DecisionTreeClassifier().predict(row, root_IG)
+        test_pred[index] = DecisionTreeClassifier().predict(row, root)
 
     test_accuracy = DecisionTreeClassifier().accuracy(test_pred, test)
-    print(f"Test Accuracy (Information Gain): {test_accuracy*100}")
+    print(f"Test Accuracy: {test_accuracy*100}")
 
     train_pred = {}
     for index, row in train.iterrows():
-        train_pred[index] = DecisionTreeClassifier().predict(row, root_IG)
+        train_pred[index] = DecisionTreeClassifier().predict(row, root)
 
     train_accuracy = DecisionTreeClassifier().accuracy(train_pred, train)
-    print(f"Train Accuracy (Information Gain): {train_accuracy*100}")
+    print(f"Train Accuracy: {train_accuracy*100}")
 
 
 
