@@ -288,9 +288,8 @@ if __name__ == "__main__":
     for atr in numerical_cols:
         train_col = train.loc[:,atr]
         test_col = test.loc[:,atr]
-
         mid = train_col.shape[0]/2
-        threshold = (train_col[mid]+train_col[mid+1])/2
+        threshold = (train_col[mid-1]+train_col[mid])/2
         for index, value in train_col.iteritems():
             if value < threshold:
                 train_col[index] = "0"
@@ -318,5 +317,8 @@ if __name__ == "__main__":
 
     train_error = DecisionTreeClassifier().error(train_pred, train)
     print(f"Train Error: {train_error*100}")
+
+    train.to_csv("debug_train_bank.csv")
+    test.to_csv("debug_test_bank.csv")
 
         
