@@ -2,7 +2,7 @@
 import pandas as pd
 import numpy as np
 
-MAX_DEPTH = 6
+MAX_DEPTH = 2
 
 class Node:
     def __init__(self):
@@ -194,13 +194,13 @@ class DecisionTreeClassifier:
                     pred = self.predict(row, branches)
         return pred
     
-    def accuracy(self, pred, data):
+    def error(self, pred, data):
         num_correct = 0
         total = data.shape[0]
         for index, row in data.iterrows():
             if pred[index] == row['label']:
                 num_correct += 1
-        return num_correct/total
+        return 1-num_correct/total
 
 if __name__ == "__main__":
     cols = '''buying,
@@ -217,8 +217,8 @@ if __name__ == "__main__":
         if(c.strip()):
             table.append(c.strip())
 
-    train = pd.read_csv("utah-cs5350-fa21/DecisionTree/train.csv", names=table)
-    test = pd.read_csv("utah-cs5350-fa21/DecisionTree/test.csv", names=table)
+    train = pd.read_csv("train.csv", names=table)
+    test = pd.read_csv("test.csv", names=table)
 
     root = DecisionTreeClassifier().create_tree(train, train, attributes, labels, gain="info_gain")
 
@@ -227,15 +227,47 @@ if __name__ == "__main__":
     for index, row in test.iterrows():
         test_pred[index] = DecisionTreeClassifier().predict(row, root)
 
-    test_accuracy = DecisionTreeClassifier().accuracy(test_pred, test)
-    print(f"Test Accuracy: {test_accuracy*100}")
+    test_error = DecisionTreeClassifier().error(test_pred, test)
+    print(f"Test Error: {test_error*100}")
 
     train_pred = {}
     for index, row in train.iterrows():
         train_pred[index] = DecisionTreeClassifier().predict(row, root)
 
-    train_accuracy = DecisionTreeClassifier().accuracy(train_pred, train)
-    print(f"Train Accuracy: {train_accuracy*100}")
+    train_error = DecisionTreeClassifier().error(train_pred, train)
+    print(f"Train Error: {train_error*100}")
+
+    # Loading the Bank dataset
+    b_cols = '''age,
+    job,
+    marital,
+    education,
+    default,
+    balance,
+    housing,
+    loan,
+    contact,
+    day,
+    month,
+    duration,
+    campaign,
+    pdays,
+    previous,
+    poutcome,
+    y
+    '''
+    b_table = []
+    b_labels = ["yes", "no"]
+    b_attributes = ["age", "job", "marital", "education", "default", 
+    "balance", "housing", "loan", "contact", "day", "month", "duration",
+    "campaign", "pdays", "previous", "poutcome"]
+
+    for c in b_cols.split(','):
+        if(c.strip()):
+            b_table.append(c.strip())
+
+    train = pd.read_csv("bank/train.csv", names=b_table)
+    test = pd.read_csv("bank/test.csv", names=b_table)
 
 
 
