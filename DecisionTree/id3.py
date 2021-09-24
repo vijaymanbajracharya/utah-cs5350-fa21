@@ -209,9 +209,22 @@ class DecisionTreeClassifier:
                 num_correct += 1
         return 1-num_correct/total
 
-if __name__ == "__main__":
-    pd.options.mode.chained_assignment = None
+def find_error(test, train, root):
+    test_pred = {}
+    for index, row in test.iterrows():
+        test_pred[index] = DecisionTreeClassifier().predict(row, root)
 
+    test_error = DecisionTreeClassifier().error(test_pred, test)
+    print(f"Test Error: {test_error*100}")
+
+    train_pred = {}
+    for index, row in train.iterrows():
+        train_pred[index] = DecisionTreeClassifier().predict(row, root)
+
+    train_error = DecisionTreeClassifier().error(train_pred, train)
+    print(f"Train Error: {train_error*100}")
+
+def decision_tree_car(gain="info_gain"):
     cols = '''buying,
         maint,
         doors,
@@ -228,34 +241,16 @@ if __name__ == "__main__":
 
     train = pd.read_csv("train.csv", names=table)
     test = pd.read_csv("test.csv", names=table)
-    # DEBUG VERSIONS
-    # train = pd.read_csv("utah-cs5350-fa21/DecisionTree/train.csv", names=table)
-    # test = pd.read_csv("utah-cs5350-fa21/DecisionTree/test.csv", names=table)
 
-    root = DecisionTreeClassifier().create_tree(train, train, attributes, labels, gain="majority_error")
+    root = DecisionTreeClassifier().create_tree(train, train, attributes, labels, gain=gain)
 
-    # Accuracies for Information Gain
-    test_pred = {}
-    for index, row in test.iterrows():
-        test_pred[index] = DecisionTreeClassifier().predict(row, root)
+    print(f"Prediction errors % - Car ({gain})")
+    find_error(test, train, root)
+    print("\r\n")
 
-    test_error = DecisionTreeClassifier().error(test_pred, test)
-    print(f"Test Error: {test_error*100}")
-
-    train_pred = {}
-    for index, row in train.iterrows():
-        train_pred[index] = DecisionTreeClassifier().predict(row, root)
-
-    train_error = DecisionTreeClassifier().error(train_pred, train)
-    print(f"Train Error: {train_error*100}")
-
-
-    print("*************")
-
-    t1 = time.time()
-
+def decision_tree_bank(gain="info_gain"):
     # Loading the Bank dataset
-    b_cols = '''age,
+    cols = '''age,
     job,
     marital,
     education,
@@ -273,21 +268,18 @@ if __name__ == "__main__":
     poutcome,
     label
     '''
-    b_table = []
-    b_labels = ["yes", "no"]
-    b_attributes = ["age", "job", "marital", "education", "default", 
+    table = []
+    labels = ["yes", "no"]
+    attributes = ["age", "job", "marital", "education", "default", 
     "balance", "housing", "loan", "contact", "day", "month", "duration",
     "campaign", "pdays", "previous", "poutcome"]
 
-    for c in b_cols.split(','):
+    for c in cols.split(','):
         if(c.strip()):
-            b_table.append(c.strip())
+            table.append(c.strip())
 
-    train = pd.read_csv("bank/train.csv", names=b_table)
-    test = pd.read_csv("bank/test.csv", names=b_table)
-    # DEBUG VERSIONS
-    # train = pd.read_csv("utah-cs5350-fa21/DecisionTree/bank/train.csv", names=b_table)
-    # test = pd.read_csv("utah-cs5350-fa21/DecisionTree/bank/test.csv", names=b_table)
+    train = pd.read_csv("bank/train.csv", names=table)
+    test = pd.read_csv("bank/test.csv", names=table)
 
     # Binarize the numerical data
     numerical_cols = ["age", "balance", "day", "duration", "campaign", "pdays", "previous"]
@@ -303,7 +295,7 @@ if __name__ == "__main__":
         test.loc[test[atr] >= threshold, atr] = 1
 
     # Turning missing attribute "unknown" into most common value
-    for atr in b_attributes:
+    for atr in attributes:
         train_col = train.loc[:,atr]
         if any(train_col == "unknown"):
             values, counts = np.unique(train_col, return_counts=True)
@@ -320,24 +312,25 @@ if __name__ == "__main__":
             continue
 
 
-    b_root = DecisionTreeClassifier().create_tree(train, train, b_attributes, b_labels, gain="info_gain")
+    root = DecisionTreeClassifier().create_tree(train, train, attributes, labels, gain=gain)
 
-    # Accuracies for Information Gain
-    test_pred = {}
-    for index, row in test.iterrows():
-        test_pred[index] = DecisionTreeClassifier().predict(row, b_root)
+    print(f"Prediction errors % - Bank ({gain})")
+    find_error(test, train, root)
+    print("\r\n")
 
-    test_error = DecisionTreeClassifier().error(test_pred, test)
-    print(f"Test Error: {test_error*100}")
+if __name__ == "__main__":
+    pd.options.mode.chained_assignment = None
 
-    train_pred = {}
-    for index, row in train.iterrows():
-        train_pred[index] = DecisionTreeClassifier().predict(row, b_root)
+    print("\r\nThe default max-depth is 16. Modify MAX_DEPTH global to change height of decision tree.\r\n")
 
-    train_error = DecisionTreeClassifier().error(train_pred, train)
-    print(f"Train Error: {train_error*100}")
+    heuristics = ["info_gain", "majority_error", "gini_index"]
+    for h in heuristics:
+        decision_tree_car(h)
 
-    t2 = time.time()
-    print(f"This is how long bank dataset took: {t2-t1}")
+    for h in heuristics:
+        decision_tree_bank(h)
+
+
+    
 
         
