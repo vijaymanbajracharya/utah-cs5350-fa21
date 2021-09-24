@@ -1,8 +1,9 @@
 # ID3 algorithm with information gain
 import pandas as pd
 import numpy as np
+import time
 
-MAX_DEPTH = 6
+MAX_DEPTH = 16
 
 class Node:
     def __init__(self):
@@ -225,13 +226,13 @@ if __name__ == "__main__":
         if(c.strip()):
             table.append(c.strip())
 
-    # train = pd.read_csv("train.csv", names=table)
-    # test = pd.read_csv("test.csv", names=table)
+    train = pd.read_csv("train.csv", names=table)
+    test = pd.read_csv("test.csv", names=table)
     # DEBUG VERSIONS
-    train = pd.read_csv("utah-cs5350-fa21/DecisionTree/train.csv", names=table)
-    test = pd.read_csv("utah-cs5350-fa21/DecisionTree/test.csv", names=table)
+    # train = pd.read_csv("utah-cs5350-fa21/DecisionTree/train.csv", names=table)
+    # test = pd.read_csv("utah-cs5350-fa21/DecisionTree/test.csv", names=table)
 
-    root = DecisionTreeClassifier().create_tree(train, train, attributes, labels, gain="info_gain")
+    root = DecisionTreeClassifier().create_tree(train, train, attributes, labels, gain="majority_error")
 
     # Accuracies for Information Gain
     test_pred = {}
@@ -250,6 +251,8 @@ if __name__ == "__main__":
 
 
     print("*************")
+
+    t1 = time.time()
 
     # Loading the Bank dataset
     b_cols = '''age,
@@ -280,20 +283,19 @@ if __name__ == "__main__":
         if(c.strip()):
             b_table.append(c.strip())
 
-    # train = pd.read_csv("bank/train.csv", names=b_table)
-    # test = pd.read_csv("bank/test.csv", names=b_table)
+    train = pd.read_csv("bank/train.csv", names=b_table)
+    test = pd.read_csv("bank/test.csv", names=b_table)
     # DEBUG VERSIONS
-    train = pd.read_csv("utah-cs5350-fa21/DecisionTree/bank/train.csv", names=b_table)
-    test = pd.read_csv("utah-cs5350-fa21/DecisionTree/bank/test.csv", names=b_table)
+    # train = pd.read_csv("utah-cs5350-fa21/DecisionTree/bank/train.csv", names=b_table)
+    # test = pd.read_csv("utah-cs5350-fa21/DecisionTree/bank/test.csv", names=b_table)
 
     # Binarize the numerical data
     numerical_cols = ["age", "balance", "day", "duration", "campaign", "pdays", "previous"]
     for atr in numerical_cols:
         train_col = train.loc[:,atr]
         test_col = test.loc[:,atr]
-        mid = train_col.shape[0]/2
         # Calculate median
-        threshold = (train_col[mid-1]+train_col[mid])/2
+        threshold = train_col.median()
 
         train.loc[train[atr] < threshold, atr] = 0
         train.loc[train[atr] >= threshold, atr] = 1
@@ -335,7 +337,7 @@ if __name__ == "__main__":
     train_error = DecisionTreeClassifier().error(train_pred, train)
     print(f"Train Error: {train_error*100}")
 
-    train.to_csv("debug_train_bank.csv")
-    test.to_csv("debug_test_bank.csv")
+    t2 = time.time()
+    print(f"This is how long bank dataset took: {t2-t1}")
 
         
