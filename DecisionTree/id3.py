@@ -136,15 +136,12 @@ class DecisionTreeClassifier:
         return total_gini - atr_gini
 
 
-    def create_tree(self, data, train, attributes, labels, node=None, depth=0, gain="info_gain"):
+    def create_tree(self, data, train, attributes, labels, node=Node(), depth=0, gain="info_gain"):
         # Base case check for same labels
         global MAX_DEPTH
-        if node is None:
-            node = Node()
-
         values, counts = np.unique(data["label"], return_counts=True)
         if len(counts) <= 1:
-            # Return the label as a 
+            # Return the label as a node 
             node.value = values[0]
             return node
         # Base case check for empty attributes
@@ -152,6 +149,7 @@ class DecisionTreeClassifier:
             # Return most common label
             node.value = values[np.argmax(counts)]
             return node
+        # Check if we are at max depth
         elif depth == MAX_DEPTH:
             node.value = values[np.argmax(counts)]
             return node
@@ -171,23 +169,28 @@ class DecisionTreeClassifier:
             node.value = best_attribute
             node.edge = []
 
+            if best_attribute in attributes:
+                # Remove best_attribute from attributes list
+                attributes.remove(best_attribute)
+
             for branch in np.unique(train[best_attribute]):
+                # Create a leaf child
                 child = Node()
                 child.feature_value = branch
                 node.edge.append(child)
+
+                # Split the dataset on the best attribute
                 subset = data.loc[data[best_attribute] == branch]
+
+                # If the split contains no rows
                 if len(subset) == 0:
                     child.value = values[np.argmax(counts)]
                 else:
-                    if best_attribute in attributes:
-                        # Remove best_attribute from attributes list
-                        attributes.remove(best_attribute)
-
                     child = self.create_tree(subset, train, attributes.copy(), labels, child, depth=depth+1, gain=gain)
 
             return node
 
-    def predict(self, row, root, ):
+    def predict(self, row, root):
         value = row[root.value]
         for branches in root.edge:
             if branches.feature_value == value:
@@ -289,17 +292,13 @@ if __name__ == "__main__":
         train_col = train.loc[:,atr]
         test_col = test.loc[:,atr]
         mid = train_col.shape[0]/2
+        # Calculate median
         threshold = (train_col[mid-1]+train_col[mid])/2
-        for index, value in train_col.iteritems():
-            if value < threshold:
-                train_col[index] = "0"
-            else:
-                train_col[index] = "1"
-        for index, value in test_col.iteritems():
-            if value < threshold:
-                test_col[index] = "0"
-            else:
-                test_col[index] = "1"
+
+        train.loc[train[atr] < threshold, atr] = 0
+        train.loc[train[atr] >= threshold, atr] = 1
+        test.loc[test[atr] < threshold, atr] = 0
+        test.loc[test[atr] >= threshold, atr] = 1
 
     b_root = DecisionTreeClassifier().create_tree(train, train, b_attributes, b_labels, gain="info_gain")
 
