@@ -3,7 +3,7 @@ import pandas as pd
 import numpy as np
 import time
 
-MAX_DEPTH = 16
+MAX_DEPTH = 6
 
 class Node:
     def __init__(self):
@@ -295,6 +295,7 @@ def decision_tree_bank(gain="info_gain"):
         test.loc[test[atr] >= threshold, atr] = 1
 
     # Turning missing attribute "unknown" into most common value
+    # NOTE: You can comment out this entire for loop to keep unknown values part of the data
     for atr in attributes:
         train_col = train.loc[:,atr]
         if any(train_col == "unknown"):
@@ -321,7 +322,7 @@ def decision_tree_bank(gain="info_gain"):
 if __name__ == "__main__":
     pd.options.mode.chained_assignment = None
 
-    print("\r\nThe default max-depth is 16. Modify MAX_DEPTH global to change height of decision tree.\r\n")
+    print("\r\nThe default max-depth is 6. Modify MAX_DEPTH global to change height of decision tree.\r\n")
 
     heuristics = ["info_gain", "majority_error", "gini_index"]
     for h in heuristics:
