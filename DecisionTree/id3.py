@@ -2,7 +2,7 @@
 import pandas as pd
 import numpy as np
 
-MAX_DEPTH = 16
+MAX_DEPTH = 6
 
 class Node:
     def __init__(self):
@@ -299,6 +299,24 @@ if __name__ == "__main__":
         train.loc[train[atr] >= threshold, atr] = 1
         test.loc[test[atr] < threshold, atr] = 0
         test.loc[test[atr] >= threshold, atr] = 1
+
+    # Turning missing attribute "unknown" into most common value
+    for atr in b_attributes:
+        train_col = train.loc[:,atr]
+        if any(train_col == "unknown"):
+            values, counts = np.unique(train_col, return_counts=True)
+            mcv_index = np.argmax(counts)
+            if values[mcv_index] == "unknown":
+                mcv_index = np.argsort(counts)[-2]
+
+            mcv = values[mcv_index]
+            test_col = test.loc[:,atr]
+
+            train.loc[train[atr] == "unknown", atr] = mcv
+            test.loc[test[atr] == "unknown", atr] = mcv
+        else:
+            continue
+
 
     b_root = DecisionTreeClassifier().create_tree(train, train, b_attributes, b_labels, gain="info_gain")
 
