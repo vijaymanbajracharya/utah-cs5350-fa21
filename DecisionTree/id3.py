@@ -36,13 +36,14 @@ class DecisionTreeClassifier:
         num_train = attribute.shape[0]
         total_entropy = 0.0
         value_counts = {}
+
         features, counts = np.unique(attribute[atr_name], return_counts=True)
 
-        for index, row in attribute.iterrows():
-            if (row[atr_name],row["label"]) not in value_counts:
-                value_counts[(row[atr_name],row["label"])] = 1
+        for row in attribute.itertuples():
+            if (getattr(row, atr_name),row.label) not in value_counts:
+                value_counts[(getattr(row, atr_name),row.label)] = 1
             else:
-                value_counts[(row[atr_name],row["label"])] += 1
+                value_counts[(getattr(row, atr_name),row.label)] += 1
 
         for key, value in value_counts:
             prob = value_counts[(key, value)] / counts[np.where(features==key)]
