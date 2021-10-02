@@ -12,7 +12,7 @@ class Node:
         self.feature_value = None
 
 class DecisionTreeClassifier:
-    def cross_entropy(self, attribute, atr_name):
+    def cross_entropy(self, attribute, atr_name, index):
         # # Get the number of rows
         # num_train = attribute.shape[0]
 
@@ -39,11 +39,12 @@ class DecisionTreeClassifier:
 
         features, counts = np.unique(attribute[atr_name], return_counts=True)
 
-        for row in attribute.itertuples():
-            if (getattr(row, atr_name),row.label) not in value_counts:
-                value_counts[(getattr(row, atr_name),row.label)] = 1
+        for row in attribute.itertuples(name=None):
+            key = (row[index+1],row[-1])
+            if key not in value_counts:
+                value_counts[key] = 1
             else:
-                value_counts[(getattr(row, atr_name),row.label)] += 1
+                value_counts[key] += 1
 
         for key, value in value_counts:
             prob = value_counts[(key, value)] / counts[np.where(features==key)]
@@ -54,9 +55,9 @@ class DecisionTreeClassifier:
 
     def information_gain(self, subset, atr_name):
         # Calculate entropy of particular attribute
-        # index = subset.columns.get_loc(atr_name)
+        index = subset.columns.get_loc(atr_name)
         # label_index = subset.columns.get_loc("label")
-        atr_entropy = self.cross_entropy(subset, atr_name)
+        atr_entropy = self.cross_entropy(subset, atr_name, index)
 
         # Return the information gain
         return atr_entropy
