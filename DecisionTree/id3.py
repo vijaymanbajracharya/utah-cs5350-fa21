@@ -3,7 +3,7 @@ import pandas as pd
 import numpy as np
 import time
 
-MAX_DEPTH = 6
+MAX_DEPTH = 16
 
 class Node:
     def __init__(self):
@@ -13,44 +13,52 @@ class Node:
 
 class DecisionTreeClassifier:
     def cross_entropy(self, attribute, atr_name):
-        # Get the number of rows
+        # # Get the number of rows
+        # num_train = attribute.shape[0]
+
+        # # Grouping to make it easier to calculate probabilities
+        # freq_by_atr = attribute.groupby([atr_name]).size().reset_index(name="Count")
+        # freq_by_row = attribute.groupby([atr_name,"label"]).size().reset_index(name="Count")
+
+        # total_entropy = 0.0
+        # feature_counts = {}
+
+        # # Count the total for each value
+        # for index, row in freq_by_atr.iterrows():
+        #     feature_counts[row[atr_name]] = row["Count"] 
+
+        # # Calculate entropy of attribute based on value
+        # for index, row in freq_by_row.iterrows():
+        #     prob = row["Count"]/feature_counts[row[atr_name]]
+        #     entropy = -prob*np.log2(prob)
+        #     total_entropy += entropy * (feature_counts[row[atr_name]]/num_train)
+
         num_train = attribute.shape[0]
-
-        # Grouping to make it easier to calculate probabilities
-        freq_by_atr = attribute.groupby([atr_name]).size().reset_index(name="Count")
-        freq_by_row = attribute.groupby([atr_name,"label"]).size().reset_index(name="Count")
-
         total_entropy = 0.0
-        feature_counts = {}
+        value_counts = {}
+        features, counts = np.unique(attribute[atr_name], return_counts=True)
 
-        # Count the total for each value
-        for index, row in freq_by_atr.iterrows():
-            feature_counts[row[atr_name]] = row["Count"] 
+        for index, row in attribute.iterrows():
+            if (row[atr_name],row["label"]) not in value_counts:
+                value_counts[(row[atr_name],row["label"])] = 1
+            else:
+                value_counts[(row[atr_name],row["label"])] += 1
 
-        # Calculate entropy of attribute based on value
-        for index, row in freq_by_row.iterrows():
-            prob = row["Count"]/feature_counts[row[atr_name]]
+        for key, value in value_counts:
+            prob = value_counts[(key, value)] / counts[np.where(features==key)]
             entropy = -prob*np.log2(prob)
-            total_entropy += entropy * (feature_counts[row[atr_name]]/num_train)
+            total_entropy += entropy * (counts[np.where(features==key)]/num_train)
 
         return total_entropy
 
     def information_gain(self, subset, atr_name):
-        # Calculate entropy of the whole subset
-        values, counts = np.unique(subset["label"], return_counts=True)
-        sum_counts = np.sum(counts)
-        total_entropy = 0.0
-        for i in range(len(counts)):
-            prob = counts[i]/sum_counts
-            total_entropy += -prob*np.log2(prob)
-
         # Calculate entropy of particular attribute
-        index = subset.columns.get_loc(atr_name)
-        label_index = subset.columns.get_loc("label")
-        atr_entropy = self.cross_entropy(subset.iloc[:, np.r_[index,label_index]], atr_name)
+        # index = subset.columns.get_loc(atr_name)
+        # label_index = subset.columns.get_loc("label")
+        atr_entropy = self.cross_entropy(subset, atr_name)
 
         # Return the information gain
-        return total_entropy - atr_entropy
+        return atr_entropy
 
     def majority_error(self, attribute, atr_name):
         # Get the number of rows
@@ -116,8 +124,6 @@ class DecisionTreeClassifier:
 
         return total_gini
 
-        
-
     def gini_gain(self, subset, atr_name):
         # Calculate the gini index of the whole subset
         values, counts = np.unique(subset["label"], return_counts=True)
@@ -135,7 +141,6 @@ class DecisionTreeClassifier:
         atr_gini = self.gini_index(subset.iloc[:, np.r_[index,label_index]], atr_name)
 
         return total_gini - atr_gini
-
 
     def create_tree(self, data, train, attributes, labels, node=Node(), depth=0, gain="info_gain"):
         # Base case check for same labels
@@ -157,13 +162,23 @@ class DecisionTreeClassifier:
         else:
             # Find attribute that gives maximum information gain
             info_gain = {}
+
+            if gain == "info_gain":
+                # Calculate entropy of the whole subset
+                values, counts = np.unique(data["label"], return_counts=True)
+                sum_counts = np.sum(counts)
+                total_entropy = 0.0
+                for i in range(len(counts)):
+                    prob = counts[i]/sum_counts
+                    total_entropy += -prob*np.log2(prob)
+
             for atr_name in attributes:
                 if gain == "majority_error":
                     info_gain[atr_name] = self.ME_gain(data, atr_name)
                 elif gain == "gini_index":
                     info_gain[atr_name] = self.gini_gain(data, atr_name)
                 else:
-                    info_gain[atr_name] = self.information_gain(data, atr_name)
+                    info_gain[atr_name] = total_entropy - self.information_gain(data, atr_name)
             best_attribute = max(info_gain, key=info_gain.get)
 
             # Create tree with best_attribute at root
@@ -181,7 +196,7 @@ class DecisionTreeClassifier:
                 node.edge.append(child)
 
                 # Split the dataset on the best attribute
-                subset = data.loc[data[best_attribute] == branch]
+                subset = data[data[best_attribute] == branch]
 
                 # If the split contains no rows
                 if len(subset) == 0:
@@ -280,6 +295,8 @@ def decision_tree_bank(gain="info_gain"):
 
     train = pd.read_csv("bank/train.csv", names=table)
     test = pd.read_csv("bank/test.csv", names=table)
+    #train = pd.read_csv("utah-cs5350-fa21/DecisionTree/bank/train.csv", names=table)
+    #test = pd.read_csv("utah-cs5350-fa21/DecisionTree/bank/test.csv", names=table)
 
     # Binarize the numerical data
     numerical_cols = ["age", "balance", "day", "duration", "campaign", "pdays", "previous"]
@@ -309,14 +326,13 @@ def decision_tree_bank(gain="info_gain"):
 
             train.loc[train[atr] == "unknown", atr] = mcv
             test.loc[test[atr] == "unknown", atr] = mcv
-        else:
-            continue
 
-
+    start = time.time()
     root = DecisionTreeClassifier().create_tree(train, train, attributes, labels, gain=gain)
+    end = time.time()
 
-    print(f"Prediction errors % - Bank ({gain})")
     find_error(test, train, root)
+    print(f"TIME TAKEN: {end-start}")
     print("\r\n")
 
 if __name__ == "__main__":
@@ -324,9 +340,9 @@ if __name__ == "__main__":
 
     print("\r\nThe default max-depth is 6. Modify MAX_DEPTH global to change height of decision tree.\r\n")
 
-    heuristics = ["info_gain", "majority_error", "gini_index"]
-    for h in heuristics:
-        decision_tree_car(h)
+    heuristics = ["info_gain"]
+    # for h in heuristics:
+    #     decision_tree_car(h)
 
     for h in heuristics:
         decision_tree_bank(h)
