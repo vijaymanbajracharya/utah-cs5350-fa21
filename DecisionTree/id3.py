@@ -13,26 +13,6 @@ class Node:
 
 class DecisionTreeClassifier:
     def cross_entropy(self, attribute, atr_name, index):
-        # # Get the number of rows
-        # num_train = attribute.shape[0]
-
-        # # Grouping to make it easier to calculate probabilities
-        # freq_by_atr = attribute.groupby([atr_name]).size().reset_index(name="Count")
-        # freq_by_row = attribute.groupby([atr_name,"label"]).size().reset_index(name="Count")
-
-        # total_entropy = 0.0
-        # feature_counts = {}
-
-        # # Count the total for each value
-        # for index, row in freq_by_atr.iterrows():
-        #     feature_counts[row[atr_name]] = row["Count"] 
-
-        # # Calculate entropy of attribute based on value
-        # for index, row in freq_by_row.iterrows():
-        #     prob = row["Count"]/feature_counts[row[atr_name]]
-        #     entropy = -prob*np.log2(prob)
-        #     total_entropy += entropy * (feature_counts[row[atr_name]]/num_train)
-
         num_train = attribute.shape[0]
         total_entropy = 0.0
         value_counts = {}
@@ -265,7 +245,9 @@ def decision_tree_car(gain="info_gain"):
     find_error(test, train, root)
     print("\r\n")
 
-def decision_tree_bank(gain="info_gain"):
+def decision_tree_bank(gain="info_gain", maxdepth=6):
+    global MAX_DEPTH
+    MAX_DEPTH = maxdepth
     # Loading the Bank dataset
     cols = '''age,
     job,
@@ -329,12 +311,9 @@ def decision_tree_bank(gain="info_gain"):
             train.loc[train[atr] == "unknown", atr] = mcv
             test.loc[test[atr] == "unknown", atr] = mcv
 
-    start = time.time()
     root = DecisionTreeClassifier().create_tree(train, train, attributes, labels, gain=gain)
-    end = time.time()
 
     find_error(test, train, root)
-    print(f"TIME TAKEN: {end-start}")
     print("\r\n")
 
 if __name__ == "__main__":
@@ -343,11 +322,16 @@ if __name__ == "__main__":
     print("\r\nThe default max-depth is 6. Modify MAX_DEPTH global to change height of decision tree.\r\n")
 
     heuristics = ["info_gain"]
-    # for h in heuristics:
-    #     decision_tree_car(h)
+    
+    import sys
+    if(len(sys.argv) >= 2):
+        for h in heuristics:
+            decision_tree_bank(h, int(sys.argv[1]))
+    else:
+        for h in heuristics:
+            decision_tree_bank(h)
 
-    for h in heuristics:
-        decision_tree_bank(h)
+    
 
 
     
