@@ -3,7 +3,7 @@ import pandas as pd
 import numpy as np
 import time
 
-MAX_DEPTH = 16
+MAX_DEPTH = 6
 
 class Node:
     def __init__(self):
@@ -245,7 +245,7 @@ def decision_tree_car(gain="info_gain"):
     find_error(test, train, root)
     print("\r\n")
 
-def decision_tree_bank(gain="info_gain", maxdepth=6):
+def decision_tree_bank(gain="info_gain", maxdepth=MAX_DEPTH):
     global MAX_DEPTH
     MAX_DEPTH = maxdepth
     # Loading the Bank dataset
@@ -297,19 +297,19 @@ def decision_tree_bank(gain="info_gain", maxdepth=6):
 
     # Turning missing attribute "unknown" into most common value
     # NOTE: You can comment out this entire for loop to keep unknown values part of the data
-    for atr in attributes:
-        train_col = train.loc[:,atr]
-        if any(train_col == "unknown"):
-            values, counts = np.unique(train_col, return_counts=True)
-            mcv_index = np.argmax(counts)
-            if values[mcv_index] == "unknown":
-                mcv_index = np.argsort(counts)[-2]
+    # for atr in attributes:
+    #     train_col = train.loc[:,atr]
+    #     if any(train_col == "unknown"):
+    #         values, counts = np.unique(train_col, return_counts=True)
+    #         mcv_index = np.argmax(counts)
+    #         if values[mcv_index] == "unknown":
+    #             mcv_index = np.argsort(counts)[-2]
 
-            mcv = values[mcv_index]
-            test_col = test.loc[:,atr]
+    #         mcv = values[mcv_index]
+    #         test_col = test.loc[:,atr]
 
-            train.loc[train[atr] == "unknown", atr] = mcv
-            test.loc[test[atr] == "unknown", atr] = mcv
+    #         train.loc[train[atr] == "unknown", atr] = mcv
+    #         test.loc[test[atr] == "unknown", atr] = mcv
 
     root = DecisionTreeClassifier().create_tree(train, train, attributes, labels, gain=gain)
 
@@ -322,7 +322,7 @@ if __name__ == "__main__":
     print("\r\nThe default max-depth is 6. Modify MAX_DEPTH global to change height of decision tree.\r\n")
 
     heuristics = ["info_gain"]
-    
+
     import sys
     if(len(sys.argv) >= 2):
         for h in heuristics:
