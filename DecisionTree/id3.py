@@ -124,9 +124,8 @@ class DecisionTreeClassifier:
 
         return total_gini - atr_gini
 
-    def create_tree(self, data, train, attributes, labels, node=Node(), depth=0, gain="info_gain"):
+    def create_tree(self, data, train, attributes, labels, node=Node(), depth=0, gain="info_gain", maxdepth=MAX_DEPTH):
         # Base case check for same labels
-        global MAX_DEPTH
         values, counts = np.unique(data["label"], return_counts=True)
         if len(counts) <= 1:
             # Return the label as a node 
@@ -138,7 +137,7 @@ class DecisionTreeClassifier:
             node.value = values[np.argmax(counts)]
             return node
         # Check if we are at max depth
-        elif depth == MAX_DEPTH:
+        elif depth == maxdepth:
             node.value = values[np.argmax(counts)]
             return node
         else:
@@ -184,7 +183,7 @@ class DecisionTreeClassifier:
                 if len(subset) == 0:
                     child.value = values[np.argmax(counts)]
                 else:
-                    child = self.create_tree(subset, train, attributes.copy(), labels, child, depth=depth+1, gain=gain)
+                    child = self.create_tree(subset, train, attributes.copy(), labels, child, depth=depth+1, gain=gain, maxdepth=maxdepth)
 
             return node
 
@@ -246,8 +245,6 @@ def decision_tree_car(gain="info_gain"):
     print("\r\n")
 
 def decision_tree_bank(gain="info_gain", maxdepth=MAX_DEPTH):
-    global MAX_DEPTH
-    MAX_DEPTH = maxdepth
     # Loading the Bank dataset
     cols = '''age,
     job,
@@ -311,7 +308,7 @@ def decision_tree_bank(gain="info_gain", maxdepth=MAX_DEPTH):
     #         train.loc[train[atr] == "unknown", atr] = mcv
     #         test.loc[test[atr] == "unknown", atr] = mcv
 
-    root = DecisionTreeClassifier().create_tree(train, train, attributes, labels, gain=gain)
+    root = DecisionTreeClassifier().create_tree(train, train, attributes, labels, gain=gain, maxdepth=maxdepth)
 
     find_error(test, train, root)
     print("\r\n")
