@@ -6,7 +6,7 @@ COST_LIST = []
 WEIGHT_LIST = []
 GRAD_LIST = []
 STEP_COUNT = 0
-LEARNING_RATE = 0.25
+LEARNING_RATE = 1e-2
 
 def read_csv_basic():
     # Loading the Concrete dataset
@@ -22,8 +22,8 @@ def read_csv_basic():
         if(c.strip()):
             table.append(c.strip())
 
-    train = pd.read_csv("debug_data.csv", names=table)
-    test = pd.read_csv("debug_data.csv", names=table)
+    train = pd.read_csv("utah-cs5350-fa21/LinearRegression/debug_data.csv", names=table)
+    test = pd.read_csv("utah-cs5350-fa21/LinearRegression/debug_data.csv", names=table)
     y = train["label"].copy()
     train = train.iloc[:, 0:-1]
     train = train.to_numpy()
@@ -83,6 +83,13 @@ def LMScost_gradient(train, weights, y):
     grad = -1 * np.dot(error.T, train) 
     return grad / m
 
+def LMScost_SGD_gradient(train, weights, y):
+    m = train.shape[0]
+    scores = np.dot(train, weights.T)
+    error = y - scores
+    grad = -1 * error * train
+    return grad 
+
 def batch_descent(train, y, learning_rate=LEARNING_RATE, threshold=10e-6):
     # Initialize weight vector to 0
     global STEP_COUNT
@@ -110,16 +117,44 @@ def batch_descent(train, y, learning_rate=LEARNING_RATE, threshold=10e-6):
             WEIGHT_LIST.append(weights)
             break
 
-def SGD():
-    pass
+def SGD(train, y, learning_rate=LEARNING_RATE, threshold=10e-6):
+    # Initialize weight vector to 0
+    global STEP_COUNT
+    weights = np.zeros((1, train.shape[1]))
+    while True:
+        WEIGHT_LIST.append(weights)
+
+        # Calculate LMS cost
+        cost = LMScost(train, weights, y)
+        COST_LIST.append(cost)
+
+        # Random sample
+        index = np.random.randint(train.shape[0])
+
+        # Calculate gradient
+        grad = LMScost_SGD_gradient(train[index], weights, y[index])
+        GRAD_LIST.append(grad)
+
+        # Update weights
+        weights = weights - learning_rate * grad
+
+        # Count steps for plotting
+        STEP_COUNT  = STEP_COUNT + 1
+
+        # Error difference magnitude
+        diff = np.linalg.norm(weights - WEIGHT_LIST[-1])
+        if diff < threshold:
+            WEIGHT_LIST.append(weights)
+            break
+
 
 def predict(test, y, weights):
     cost = LMScost(test, weights, y)
     print(f"Function value (Test): {cost}\r\n")
 
 if __name__ == "__main__":
-    train, test, y, y_test = read_csv_basic()
-    batch_descent(train, y)
+    train, test, y, y_test = read_csv()
+    SGD(train, y)
 
     plt.step(x=np.arange(0, STEP_COUNT, 1),y=COST_LIST)
     plt.show()
