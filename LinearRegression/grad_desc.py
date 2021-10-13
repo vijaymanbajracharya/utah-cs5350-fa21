@@ -93,6 +93,14 @@ def LMScost_SGD_gradient(train, weights, y):
 def batch_descent(train, y, learning_rate=LEARNING_RATE, threshold=10e-6):
     # Initialize weight vector to 0
     global STEP_COUNT
+    global COST_LIST
+    global WEIGHT_LIST
+    global GRAD_LIST
+    
+    COST_LIST = []
+    WEIGHT_LIST = []
+    GRAD_LIST = []
+    STEP_COUNT = 0
     weights = np.zeros((1, train.shape[1]))
     while True:
         WEIGHT_LIST.append(weights)
@@ -120,6 +128,14 @@ def batch_descent(train, y, learning_rate=LEARNING_RATE, threshold=10e-6):
 def SGD(train, y, learning_rate=LEARNING_RATE, threshold=10e-6):
     # Initialize weight vector to 0
     global STEP_COUNT
+    global COST_LIST
+    global WEIGHT_LIST
+    global GRAD_LIST
+
+    COST_LIST = []
+    WEIGHT_LIST = []
+    GRAD_LIST = []
+    STEP_COUNT = 0
     weights = np.zeros((1, train.shape[1]))
     while True:
         WEIGHT_LIST.append(weights)
@@ -154,12 +170,29 @@ def predict(test, y, weights):
 
 if __name__ == "__main__":
     train, test, y, y_test = read_csv()
+
     SGD(train, y)
+    plt.step(x=np.arange(0, STEP_COUNT, 1),y=COST_LIST)
+    plt.xlabel("Update Step")
+    plt.ylabel("Cost Function Value")
+    plt.title("Stochastic Gradient Descent")
+    print(f"Wight Vector: {WEIGHT_LIST[-1]}\r\n")
+    print(f"Learning Rate: {LEARNING_RATE}\r\n")
+    predict(test, y_test, WEIGHT_LIST[-1])
+
+    plt.show()
+
+
+    batch_descent(train, y)
 
     plt.step(x=np.arange(0, STEP_COUNT, 1),y=COST_LIST)
-    plt.show()
+    plt.xlabel("Update Step")
+    plt.ylabel("Cost Function Value")
+    plt.title("Batch Descent")
     print(f"Wight Vector: {WEIGHT_LIST[-1]}\r\n")
     print(f"Learning Rate: {LEARNING_RATE}\r\n")
 
     predict(test, y_test, WEIGHT_LIST[-1])
+
+    plt.show()
 
