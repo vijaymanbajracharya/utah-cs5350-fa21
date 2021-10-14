@@ -59,7 +59,7 @@ def read_csv():
     return train, test, attributes, labels
 
 class Adaboost:
-    def __init__(self, no_classifiers=10):
+    def __init__(self, no_classifiers=100):
         self.no_classifiers = no_classifiers
         self.classifiers = []
         self.alphas = []
@@ -92,7 +92,6 @@ class Adaboost:
             target[target == "yes"] = 1
             target = target.astype(float)
 
-            #Calculate Error
             errors = 0
             for i in range(len(target)):
                 if target[i] != train_pred[i]:
@@ -136,18 +135,72 @@ class Bagging:
     def predict(self):
         pass
 
+def predict(row, root):
+        value = row[root.value]
+        for branches in root.edge:
+            if branches.feature_value == value:
+                if branches.edge is None:
+                    pred = branches.value
+                else:
+                    pred = predict(row, branches)
+        return pred
+
 if __name__ == "__main__":
-    # ada = Adaboost()
-    # train, test, attributes, labels = read_csv()
+    ada = Adaboost()
+    train, test, attributes, labels = read_csv()
 
-    # # Train 
-    # final_h = train.copy()
-    # del final_h["label"]
-    # final_h["label"] = ada.hypothesize(train.shape[0])
-    # print(final_h)
+    # Train 
+    final_h = ada.hypothesize(train.shape[0])
 
-    bag = Bagging()
-    bag.fit()
+    # Calculate Trainning Error
+    target = train["label"].copy().to_numpy()
+    target[target == "no"] = -1
+    target[target == "yes"] = 1
+    target = target.astype(float)
+
+    errors = 0
+    for i in range(len(target)):
+        if target[i] != final_h[i]:
+            errors += 1
+
+    train_error = errors / len(train)
+    print(f"TRAIN ERROR: {train_error}")
+
+    # Calculate Testing Error
+    target = test["label"].copy().to_numpy()
+    target[target == "no"] = -1
+    target[target == "yes"] = 1
+    target = target.astype(float)
+
+    test_pred = []
+    for cls in range(ada.no_classifiers):
+        prediction = np.zeros(test.shape[0], dtype=np.float64)
+        for index, row in test.iterrows():
+            pred = predict(row, ada.classifiers[cls])
+            if pred == "no":
+                prediction[index] = -1
+            else:
+                prediction[index] = 1
+
+        test_pred.append(prediction)
+
+    pred = np.zeros(test.shape[0])
+    for i in range(ada.no_classifiers):
+        pred += ada.alphas[i] * test_pred[i]
+
+    y_pred = np.sign(pred)
+
+    errors = 0
+    for i in range(len(target)):
+        if target[i] != y_pred[i]:
+            errors += 1
+
+    test_error = errors / len(test)
+
+    print(f"TEST ERROR: {test_error}")
+
+    # bag = Bagging()
+    # bag.fit()
     
 
     

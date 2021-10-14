@@ -157,11 +157,39 @@ class DecisionTreeClassifier:
         # Base case check for empty attributes
         elif len(attributes) < 1:
             # Return most common label
-            node.value = values[np.argmax(counts)]
+            if use_weights == 0:
+                node.value = values[np.argmax(counts)]
+            else:
+                weighted_yes = 0
+                weighted_no = 0
+                for row in data.itertuples(name=None):
+                    if row[-2] == "yes":
+                        weighted_yes += row[-1]
+                    else:
+                        weighted_no += row[-1]
+                mcv = max(weighted_yes, weighted_no)
+                if mcv == weighted_yes:
+                    node.value = "yes"
+                else:
+                    node.value = "no"
             return node
         # Check if we are at max depth
         elif depth == maxdepth:
-            node.value = values[np.argmax(counts)]
+            if use_weights == 0:
+                node.value = values[np.argmax(counts)]
+            else:
+                weighted_yes = 0
+                weighted_no = 0
+                for row in data.itertuples(name=None):
+                    if row[-2] == "yes":
+                        weighted_yes += row[-1]
+                    else:
+                        weighted_no += row[-1]
+                mcv = max(weighted_yes, weighted_no)
+                if mcv == weighted_yes:
+                    node.value = "yes"
+                else:
+                    node.value = "no"
             return node
         else:
             # Find attribute that gives maximum information gain
