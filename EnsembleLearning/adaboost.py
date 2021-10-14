@@ -4,8 +4,8 @@ import numpy as np
 import sys
 import time
 import copy
-#sys.path.append("../")
-sys.path.append("utah-cs5350-fa21/")
+sys.path.append("../")
+#sys.path.append("utah-cs5350-fa21/")
 from DecisionTree.id3 import DecisionTreeClassifier
 
 def read_csv():
@@ -38,10 +38,10 @@ def read_csv():
         if(c.strip()):
             table.append(c.strip())
 
-    #train = pd.read_csv("bank/train.csv", names=table)
-    #test = pd.read_csv("bank/test.csv", names=table)
-    train = pd.read_csv("utah-cs5350-fa21/DecisionTree/bank/train.csv", names=table)
-    test = pd.read_csv("utah-cs5350-fa21/DecisionTree/bank/test.csv", names=table)
+    train = pd.read_csv("bank/train.csv", names=table)
+    test = pd.read_csv("bank/test.csv", names=table)
+    #train = pd.read_csv("utah-cs5350-fa21/DecisionTree/bank/train.csv", names=table)
+    #test = pd.read_csv("utah-cs5350-fa21/DecisionTree/bank/test.csv", names=table)
 
     # Binarize the numerical data
     numerical_cols = ["age", "balance", "day", "duration", "campaign", "pdays", "previous"]
@@ -57,6 +57,16 @@ def read_csv():
         test.loc[test[atr] >= threshold, atr] = 1
 
     return train, test, attributes, labels
+
+def predict(row, root):
+        value = row[root.value]
+        for branches in root.edge:
+            if branches.feature_value == value:
+                if branches.edge is None:
+                    pred = branches.value
+                else:
+                    pred = predict(row, branches)
+        return pred
 
 class Adaboost:
     def __init__(self, no_classifiers=100):
@@ -117,54 +127,115 @@ class Adaboost:
         return y_pred
 
 class Bagging:
-    def __init__(self, no_classifiers=10):
+    def __init__(self, no_classifiers=5):
         self.no_classifiers = no_classifiers
         self.classifiers = []
         self.seed = None
 
     def fit(self):
-        train, test, attributes, labels = read_csv()
-        np.random.seed(self.seed)
         for i in range(self.no_classifiers):
-            X = train.sample(train.shape[0], replace=True)
+
+            train, test, attributes, labels = read_csv()
+            np.random.seed(self.seed)
+
+            X = train.sample(train.shape[0], replace=True, ignore_index=True)
             
-            tree = DecisionTreeClassifier().create_tree(X, X, attributes, labels, gain="info_gain")
+            tree = DecisionTreeClassifier().create_tree(X, X, attributes, labels, gain="info_gain", maxdepth=10000)
 
             self.classifiers.append(copy.copy(tree))
                 
-    def predict(self):
-        pass
-
-def predict(row, root):
-        value = row[root.value]
-        for branches in root.edge:
-            if branches.feature_value == value:
-                if branches.edge is None:
-                    pred = branches.value
+    def bag_predict(self, X):
+        all_preds = []
+        for cls in range(len(self.classifiers)):
+            tree_pred = np.zeros(X.shape[0], dtype=np.float64)
+            for index, row in X.iterrows():
+                pred = predict(row, self.classifiers[cls])
+                if pred == "no":
+                    tree_pred[index] = -1
                 else:
-                    pred = predict(row, branches)
-        return pred
+                    tree_pred[index] = 1
+            all_preds.append(tree_pred)
+
+        final_prediction = []
+        # Find mode for each test data
+        for i in range(X.shape[0]):
+            pos = 0
+            neg = 0
+            for pred in all_preds:
+                if pred[i] == -1:
+                    neg += 1
+                else:
+                    pos += 1
+            majority = max(pos, neg)
+            if majority == neg:
+                final_prediction.append(-1)
+            else:
+                final_prediction.append(1)
+
+        return final_prediction
+
+            
+            
 
 if __name__ == "__main__":
-    ada = Adaboost()
+    # ada = Adaboost()
+    # train, test, attributes, labels = read_csv()
+
+    # # Train 
+    # final_h = ada.hypothesize(train.shape[0])
+
+    # # Calculate Trainning Error
+    # target = train["label"].copy().to_numpy()
+    # target[target == "no"] = -1
+    # target[target == "yes"] = 1
+    # target = target.astype(float)
+
+    # errors = 0
+    # for i in range(len(target)):
+    #     if target[i] != final_h[i]:
+    #         errors += 1
+
+    # train_error = errors / len(train)
+    # print(f"TRAIN ERROR: {train_error}")
+
+    # # Calculate Testing Error
+    # target = test["label"].copy().to_numpy()
+    # target[target == "no"] = -1
+    # target[target == "yes"] = 1
+    # target = target.astype(float)
+
+    # test_pred = []
+    # for cls in range(ada.no_classifiers):
+    #     prediction = np.zeros(test.shape[0], dtype=np.float64)
+    #     for index, row in test.iterrows():
+    #         pred = predict(row, ada.classifiers[cls])
+    #         if pred == "no":
+    #             prediction[index] = -1
+    #         else:
+    #             prediction[index] = 1
+
+    #     test_pred.append(prediction)
+
+    # pred = np.zeros(test.shape[0])
+    # for i in range(ada.no_classifiers):
+    #     pred += ada.alphas[i] * test_pred[i]
+
+    # y_pred = np.sign(pred)
+
+    # errors = 0
+    # for i in range(len(target)):
+    #     if target[i] != y_pred[i]:
+    #         errors += 1
+
+    # test_error = errors / len(test)
+
+    # print(f"TEST ERROR: {test_error}")
+
     train, test, attributes, labels = read_csv()
 
-    # Train 
-    final_h = ada.hypothesize(train.shape[0])
-
-    # Calculate Trainning Error
-    target = train["label"].copy().to_numpy()
-    target[target == "no"] = -1
-    target[target == "yes"] = 1
-    target = target.astype(float)
-
-    errors = 0
-    for i in range(len(target)):
-        if target[i] != final_h[i]:
-            errors += 1
-
-    train_error = errors / len(train)
-    print(f"TRAIN ERROR: {train_error}")
+    bag = Bagging(no_classifiers=1)
+    bag.fit()
+    test_pred = bag.bag_predict(test)
 
     # Calculate Testing Error
     target = test["label"].copy().to_numpy()
@@ -172,36 +243,36 @@ if __name__ == "__main__":
     target[target == "yes"] = 1
     target = target.astype(float)
 
-    test_pred = []
-    for cls in range(ada.no_classifiers):
-        prediction = np.zeros(test.shape[0], dtype=np.float64)
-        for index, row in test.iterrows():
-            pred = predict(row, ada.classifiers[cls])
-            if pred == "no":
-                prediction[index] = -1
-            else:
-                prediction[index] = 1
-
-        test_pred.append(prediction)
-
-    pred = np.zeros(test.shape[0])
-    for i in range(ada.no_classifiers):
-        pred += ada.alphas[i] * test_pred[i]
-
-    y_pred = np.sign(pred)
-
     errors = 0
     for i in range(len(target)):
-        if target[i] != y_pred[i]:
+        if target[i] != test_pred[i]:
             errors += 1
 
     test_error = errors / len(test)
 
-    print(f"TEST ERROR: {test_error}")
+    print(f"TEST ERROR {1}: {test_error}\r\n")
 
-    # bag = Bagging()
-    # bag.fit()
-    
+    for size in range(10, 100, 10):
+        train, test, attributes, labels = read_csv()
+
+        bag = Bagging(no_classifiers=size)
+        bag.fit()
+        test_pred = bag.bag_predict(test)
+
+        # Calculate Testing Error
+        target = test["label"].copy().to_numpy()
+        target[target == "no"] = -1
+        target[target == "yes"] = 1
+        target = target.astype(float)
+
+        errors = 0
+        for i in range(len(target)):
+            if target[i] != test_pred[i]:
+                errors += 1
+
+        test_error = errors / len(test)
+
+        print(f"TEST ERROR {size}: {test_error}\r\n")
 
     
 
