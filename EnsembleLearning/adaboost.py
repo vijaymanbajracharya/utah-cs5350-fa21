@@ -2,7 +2,8 @@ import pandas as pd
 import numpy as np
 import sys
 import time
-sys.path.append("../")
+#sys.path.append("../")
+sys.path.append("utah-cs5350-fa21/")
 from DecisionTree.id3 import DecisionTreeClassifier
 
 def read_csv():
@@ -35,10 +36,10 @@ def read_csv():
         if(c.strip()):
             table.append(c.strip())
 
-    train = pd.read_csv("bank/train.csv", names=table)
-    test = pd.read_csv("bank/test.csv", names=table)
-    #train = pd.read_csv("utah-cs5350-fa21/DecisionTree/bank/train.csv", names=table)
-    #test = pd.read_csv("utah-cs5350-fa21/DecisionTree/bank/test.csv", names=table)
+    #train = pd.read_csv("bank/train.csv", names=table)
+    #test = pd.read_csv("bank/test.csv", names=table)
+    train = pd.read_csv("utah-cs5350-fa21/DecisionTree/bank/train.csv", names=table)
+    test = pd.read_csv("utah-cs5350-fa21/DecisionTree/bank/test.csv", names=table)
 
     # Binarize the numerical data
     numerical_cols = ["age", "balance", "day", "duration", "campaign", "pdays", "previous"]
@@ -67,9 +68,10 @@ class Adaboost:
         # iterate over the number of weak classifiers we want
         for i in range(self.no_classifiers):
             train, test, attributes, labels = read_csv()
+            train["weights"] = d
 
             # Decision Tree Stump
-            h = DecisionTreeClassifier().create_tree(train, train, attributes, labels, gain="info_gain", maxdepth=2)
+            h = DecisionTreeClassifier().create_tree(train, train, attributes, labels, gain="info_gain", maxdepth=2, use_weights=1)
             self.classifiers.append(h)
 
             # Calculate error

@@ -12,32 +12,53 @@ class Node:
         self.feature_value = None
 
 class DecisionTreeClassifier:
-    def cross_entropy(self, attribute, atr_name, index):
+    def cross_entropy(self, attribute, atr_name, index, use_weights=0):
         num_train = attribute.shape[0]
         total_entropy = 0.0
         value_counts = {}
 
-        features, counts = np.unique(attribute[atr_name], return_counts=True)
+        if use_weights == 0:
+            features, counts = np.unique(attribute[atr_name], return_counts=True)
 
-        for row in attribute.itertuples(name=None):
-            key = (row[index+1],row[-1])
-            if key not in value_counts:
-                value_counts[key] = 1
-            else:
-                value_counts[key] += 1
+            for row in attribute.itertuples(name=None):
+                key = (row[index+1],row[-1])
+                if key not in value_counts:
+                    value_counts[key] = 1
+                else:
+                    value_counts[key] += 1
 
-        for key, value in value_counts:
-            prob = value_counts[(key, value)] / counts[np.where(features==key)]
-            entropy = -prob*np.log2(prob)
-            total_entropy += entropy * (counts[np.where(features==key)]/num_train)
+            for key, value in value_counts:
+                prob = value_counts[(key, value)] / counts[np.where(features==key)][0]
+                entropy = -prob*np.log2(prob)
+                total_entropy += entropy * (counts[np.where(features==key)][0]/num_train)
 
-        return total_entropy
+            return total_entropy
+        else:
+            for row in attribute.itertuples(name=None):
+                key = (row[index+1],row[-2],row[-1])
+                if key not in value_counts:
+                    value_counts[key] = [1, row[-1]]
+                else:
+                    value_counts[key][0] = value_counts[key][0] + 1
+                    value_counts[key][1] = value_counts[key][1] + row[-1]
+            
+            for key in value_counts:
+                total_weight = 0.0
+                for item in value_counts:
+                    if item[0] == key[0]:
+                        total_weight += value_counts[item][1]
 
-    def information_gain(self, subset, atr_name):
+                prob = value_counts[key][1] / total_weight
+                entropy = -prob*np.log2(prob)
+                total_entropy += entropy * total_weight
+                
+            return total_entropy
+
+    def information_gain(self, subset, atr_name, use_weights=0):
         # Calculate entropy of particular attribute
         index = subset.columns.get_loc(atr_name)
         # label_index = subset.columns.get_loc("label")
-        atr_entropy = self.cross_entropy(subset, atr_name, index)
+        atr_entropy = self.cross_entropy(subset, atr_name, index, use_weights=use_weights)
 
         # Return the information gain
         return atr_entropy
@@ -124,7 +145,7 @@ class DecisionTreeClassifier:
 
         return total_gini - atr_gini
 
-    def create_tree(self, data, train, attributes, labels, node=Node(), depth=0, gain="info_gain", maxdepth=MAX_DEPTH):
+    def create_tree(self, data, train, attributes, labels, node=Node(), depth=0, gain="info_gain", maxdepth=MAX_DEPTH, use_weights=0):
         # Base case check for same labels
         values, counts = np.unique(data["label"], return_counts=True)
         if len(counts) <= 1:
@@ -146,12 +167,21 @@ class DecisionTreeClassifier:
 
             if gain == "info_gain":
                 # Calculate entropy of the whole subset
-                values, counts = np.unique(data["label"], return_counts=True)
-                sum_counts = np.sum(counts)
-                total_entropy = 0.0
-                for i in range(len(counts)):
-                    prob = counts[i]/sum_counts
-                    total_entropy += -prob*np.log2(prob)
+                if use_weights == 0:
+                    values, counts = np.unique(data["label"], return_counts=True)
+                    sum_counts = np.sum(counts)
+                    total_entropy = 0.0
+                    for i in range(len(counts)):
+                        prob = counts[i]/sum_counts
+                        total_entropy += -prob*np.log2(prob)
+                else:
+                    weighted_y = 0.0
+                    for i in range(len(data)):
+                        if data.iloc[i]["label"] == "yes":
+                            weighted_y = weighted_y + data.iloc[i]["weights"]
+
+                    weighted_n = 1 - weighted_y     
+                    total_entropy = -weighted_y*np.log2(weighted_y) -weighted_n*np.log2(weighted_n)
 
             for atr_name in attributes:
                 if gain == "majority_error":
@@ -159,7 +189,7 @@ class DecisionTreeClassifier:
                 elif gain == "gini_index":
                     info_gain[atr_name] = self.gini_gain(data, atr_name)
                 else:
-                    info_gain[atr_name] = total_entropy - self.information_gain(data, atr_name)
+                    info_gain[atr_name] = total_entropy - self.information_gain(data, atr_name, use_weights=use_weights)
             best_attribute = max(info_gain, key=info_gain.get)
 
             # Create tree with best_attribute at root
