@@ -1,7 +1,9 @@
+from os import error
 import pandas as pd
 import numpy as np
 import sys
 import time
+import copy
 #sys.path.append("../")
 sys.path.append("utah-cs5350-fa21/")
 from DecisionTree.id3 import DecisionTreeClassifier
@@ -57,9 +59,11 @@ def read_csv():
     return train, test, attributes, labels
 
 class Adaboost:
-    def __init__(self, no_classifiers=100):
+    def __init__(self, no_classifiers=10):
         self.no_classifiers = no_classifiers
         self.classifiers = []
+        self.alphas = []
+        self.preds = []
 
     def hypothesize(self, m):
         # initialize weights
@@ -72,10 +76,10 @@ class Adaboost:
 
             # Decision Tree Stump
             h = DecisionTreeClassifier().create_tree(train, train, attributes, labels, gain="info_gain", maxdepth=2, use_weights=1)
-            self.classifiers.append(h)
+            self.classifiers.append(copy.copy(h))
 
             # Calculate error
-            train_pred = np.zeros(m, dtype=np.int32)
+            train_pred = np.zeros(m, dtype=np.float64)
             for index, row in train.iterrows():
                 pred = DecisionTreeClassifier().predict(row, h)
                 if pred == "no":
@@ -86,20 +90,67 @@ class Adaboost:
             target = train["label"].copy().to_numpy()
             target[target == "no"] = -1
             target[target == "yes"] = 1
+            target = target.astype(float)
 
-            #TODO: Calculate Error
-            train_error = 0
+            #Calculate Error
+            errors = 0
+            for i in range(len(target)):
+                if target[i] != train_pred[i]:
+                    errors += 1
+
+            train_error = errors / len(train)
+
+            self.preds.append(train_pred)
 
             # Calculate alpha
-            alpha = np.log((1-train_error)/train_error)/2
+            alpha = np.log((1-train_error)/train_error) / 2
+            self.alphas.append(copy.copy(alpha))
 
             # Update weights
-            #TODO: Update weights
+            d = d * np.exp(-alpha * target * train_pred)
+            d = d / np.sum(d)
+
+        pred = np.zeros(train.shape[0])
+        for i in range(self.no_classifiers):
+            pred += ada.alphas[i] * ada.preds[i]
+
+        y_pred = np.sign(pred)
+        return y_pred
+
+class Bagging:
+    def __init__(self, no_classifiers=10):
+        self.no_classifiers = no_classifiers
+        self.classifiers = []
+        self.seed = None
+
+    def fit(self):
+        train, test, attributes, labels = read_csv()
+        np.random.seed(self.seed)
+        for i in range(self.no_classifiers):
+            X = train.sample(train.shape[0], replace=True)
+            
+            tree = DecisionTreeClassifier().create_tree(X, X, attributes, labels, gain="info_gain")
+
+            self.classifiers.append(copy.copy(tree))
+                
+    def predict(self):
+        pass
 
 if __name__ == "__main__":
-    ada = Adaboost()
-    train, test, attributes, labels = read_csv()
-    ada.hypothesize(train.shape[0])
+    # ada = Adaboost()
+    # train, test, attributes, labels = read_csv()
+
+    # # Train 
+    # final_h = train.copy()
+    # del final_h["label"]
+    # final_h["label"] = ada.hypothesize(train.shape[0])
+    # print(final_h)
+
+    bag = Bagging()
+    bag.fit()
     
+
+    
+
 
 
