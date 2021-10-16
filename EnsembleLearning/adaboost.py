@@ -140,7 +140,7 @@ class Adaboost:
 if __name__ == "__main__":
     data_upload_test = []
     data_upload_train = []
-    for size in range(1, 201):
+    for size in range(1, 101):
         train, test, attributes, labels = read_csv()
 
         # Train 
