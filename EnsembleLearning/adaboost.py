@@ -75,7 +75,7 @@ class Adaboost:
         self.alphas = []
         self.preds = []
 
-    def hypothesize(self, m):
+    def ada_fit(self, m):
         # initialize weights
         d = np.full(m, 1/m)
 
@@ -120,12 +120,17 @@ class Adaboost:
             d = d * np.exp(-alpha * target * train_pred)
             d = d / np.sum(d)
 
+    def ada_predict(self, X):
+        pass
+
+    
+
 if __name__ == "__main__":
     ada = Adaboost()
     train, test, attributes, labels = read_csv()
 
     # Train 
-    ada.hypothesize(train.shape[0])
+    ada.ada_fit(train.shape[0])
     final_h = np.sign(np.dot(ada.alphas, ada.preds))
 
     # Calculate Trainning Error

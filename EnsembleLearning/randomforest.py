@@ -105,10 +105,12 @@ class RandomForest:
         return final_prediction.mode(axis=1)[0]
 
 if __name__ == "__main__":
+    data_upload_test = []
+    data_upload_train = []
     for size in range(1, 101):
         train, test, attributes, labels = read_csv()
 
-        rf = RandomForest(no_classifiers=size, G=2)
+        rf = RandomForest(no_classifiers=size, G=6)
         rf.rf_fit()
         test_pred = rf.rf_predict(test)
         train_pred = rf.rf_predict(train)
@@ -124,9 +126,10 @@ if __name__ == "__main__":
             if target[i] != test_pred[i]:
                 errors += 1
 
-        test_error = errors / len(test)
+        test_error = (errors / len(test))*100
 
         print(f"TEST ERROR {size}: {test_error}")
+        data_upload_test.append(test_error)
 
         # Calculate Train Error
         target = train["label"].copy().to_numpy()
@@ -139,6 +142,15 @@ if __name__ == "__main__":
             if target[i] != train_pred[i]:
                 errors += 1
 
-        train_error = errors / len(train)
+        train_error = (errors / len(train))*100
 
         print(f"TRAIN ERROR {size}: {train_error}")
+        data_upload_train.append(train_error)
+
+    with open('rf_test.txt', 'w') as f:
+        for item in data_upload_test:
+            f.write("%s\n" % item)
+
+    with open('rf_train.txt', 'w') as f:
+        for item in data_upload_train:
+            f.write("%s\n" % item)
