@@ -34,10 +34,9 @@ class DecisionTreeClassifier:
 
             return total_entropy
         else:
-            num_train = attribute["weights"]
-
+            #TODO: FIX THIS PART. WEIGHT SHOULD NOT BE PART OF THE KEY
             for row in attribute.itertuples(name=None):
-                key = (row[index+1],row[-2],row[-1])
+                key = (row[index+1],row[-2])
                 if key not in value_counts:
                     value_counts[key] = [1, row[-1]]
                 else:
@@ -52,7 +51,7 @@ class DecisionTreeClassifier:
 
                 prob = value_counts[key][1] / total_weight
                 entropy = -prob*np.log2(prob)
-                total_entropy += entropy * total_weight / np.sum(num_train)
+                total_entropy += entropy * total_weight
                 
             return total_entropy
 

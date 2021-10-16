@@ -69,7 +69,7 @@ def predict(row, root):
         return pred
 
 class Adaboost:
-    def __init__(self, no_classifiers=10):
+    def __init__(self, no_classifiers=20):
         self.no_classifiers = no_classifiers
         self.classifiers = []
         self.alphas = []
