@@ -105,31 +105,10 @@ class RandomForest:
         return final_prediction.mode(axis=1)[0]
 
 if __name__ == "__main__":
-    train, test, attributes, labels = read_csv()
-
-    rf = RandomForest(no_classifiers=1, G=6)
-    rf.rf_fit()
-    test_pred = rf.rf_predict(test)
-
-    # Calculate Testing Error
-    target = test["label"].copy().to_numpy()
-    target[target == "no"] = -1
-    target[target == "yes"] = 1
-    target = target.astype(float)
-
-    errors = 0
-    for i in range(len(target)):
-        if target[i] != test_pred[i]:
-            errors += 1
-
-    test_error = errors / len(test)
-
-    print(f"TEST ERROR {1}: {test_error}")
-
-    for size in range(10, 100, 10):
+    for size in range(1, 101):
         train, test, attributes, labels = read_csv()
 
-        rf = RandomForest(no_classifiers=size, G=6)
+        rf = RandomForest(no_classifiers=size, G=2)
         rf.rf_fit()
         test_pred = rf.rf_predict(test)
         train_pred = rf.rf_predict(train)
@@ -148,3 +127,18 @@ if __name__ == "__main__":
         test_error = errors / len(test)
 
         print(f"TEST ERROR {size}: {test_error}")
+
+        # Calculate Train Error
+        target = train["label"].copy().to_numpy()
+        target[target == "no"] = -1
+        target[target == "yes"] = 1
+        target = target.astype(float)
+
+        errors = 0
+        for i in range(len(target)):
+            if target[i] != train_pred[i]:
+                errors += 1
+
+        train_error = errors / len(train)
+
+        print(f"TRAIN ERROR {size}: {train_error}")
