@@ -69,7 +69,7 @@ def predict(row, root):
         return pred
 
 class Adaboost:
-    def __init__(self, no_classifiers=20):
+    def __init__(self, no_classifiers=5):
         self.no_classifiers = no_classifiers
         self.classifiers = []
         self.alphas = []
@@ -85,7 +85,7 @@ class Adaboost:
             train["weights"] = d
 
             # Decision Tree Stump
-            h = DecisionTreeClassifier().create_tree(train, train, attributes, labels, gain="info_gain", maxdepth=1, use_weights=1)
+            h = DecisionTreeClassifier().create_tree(train, train, attributes, labels, gain="info_gain", maxdepth=2, use_weights=1)
             self.classifiers.append(copy.copy(h))
 
             # Calculate error
@@ -121,60 +121,72 @@ class Adaboost:
             d = d / np.sum(d)
 
     def ada_predict(self, X):
-        pass
+        test_pred = []
+        for cls in range(self.no_classifiers):
+            prediction = np.zeros(test.shape[0], dtype=np.float64)
+            for index, row in test.iterrows():
+                pred = predict(row, self.classifiers[cls])
+                if pred == "no":
+                    prediction[index] = -1
+                else:
+                    prediction[index] = 1
+
+            test_pred.append(prediction)
+    
+        y_pred = np.sign(np.dot(self.alphas, test_pred))
 
     
 
 if __name__ == "__main__":
-    ada = Adaboost()
-    train, test, attributes, labels = read_csv()
+    data_upload_test = []
+    data_upload_train = []
+    for size in range(1, 6):
+        train, test, attributes, labels = read_csv()
 
-    # Train 
-    ada.ada_fit(train.shape[0])
-    final_h = np.sign(np.dot(ada.alphas, ada.preds))
+        # Train 
+        ada = Adaboost(no_classifiers=size)
+        ada.ada_fit(train.shape[0])
+        train_pred = np.sign(np.dot(ada.alphas, ada.preds))
+        test_pred = ada.ada_predict(test)
 
-    # Calculate Trainning Error
-    target = train["label"].copy().to_numpy()
-    target[target == "no"] = -1
-    target[target == "yes"] = 1
-    target = target.astype(float)
+        # Calculate Testing Error
+        target = test["label"].copy().to_numpy()
+        target[target == "no"] = -1
+        target[target == "yes"] = 1
+        target = target.astype(float)
 
-    errors = 0
-    for i in range(len(target)):
-        if target[i] != final_h[i]:
-            errors += 1
+        errors = 0
+        for i in range(len(target)):
+            if target[i] != train_pred[i]:
+                errors += 1
 
-    train_error = errors / len(train)
-    print(f"TRAIN ERROR: {train_error}")
+        test_error = (errors / len(test))*100
+        print(f"TEST ERROR {size}: {test_error}")
+        data_upload_test.append(test_error)
 
-    # Calculate Testing Error
-    target = test["label"].copy().to_numpy()
-    target[target == "no"] = -1
-    target[target == "yes"] = 1
-    target = target.astype(float)
 
-    test_pred = []
-    for cls in range(ada.no_classifiers):
-        prediction = np.zeros(test.shape[0], dtype=np.float64)
-        for index, row in test.iterrows():
-            pred = predict(row, ada.classifiers[cls])
-            if pred == "no":
-                prediction[index] = -1
-            else:
-                prediction[index] = 1
+        # Calculate Trainning Error
+        target = train["label"].copy().to_numpy()
+        target[target == "no"] = -1
+        target[target == "yes"] = 1
+        target = target.astype(float)
 
-        test_pred.append(prediction)
-  
-    y_pred = np.sign(np.dot(ada.alphas, test_pred))
+        errors = 0
+        for i in range(len(target)):
+            if target[i] != train_pred[i]:
+                errors += 1
 
-    errors = 0
-    for i in range(len(target)):
-        if target[i] != y_pred[i]:
-            errors += 1
+        train_error = (errors / len(train))*100
+        print(f"TRAIN ERROR {size}: {train_error}")
+        data_upload_train.append(train_error)
+    
+    with open('ada_test.txt', 'w') as f:
+        for item in data_upload_test:
+            f.write("%s\n" % item)
 
-    test_error = errors / len(test)
-
-    print(f"TEST ERROR: {test_error}")
+    with open('ada_train.txt', 'w') as f:
+        for item in data_upload_train:
+            f.write("%s\n" % item)
 
     
 
