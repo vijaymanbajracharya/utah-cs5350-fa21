@@ -81,7 +81,7 @@ def LMScost_gradient(train, weights, y):
     scores = np.dot(train, weights.T).reshape(m, 1)
     error = y - scores
     grad = -1 * np.dot(error.T, train) 
-    return grad / m
+    return grad 
 
 def LMScost_SGD_gradient(train, weights, y):
     m = train.shape[0]
@@ -171,28 +171,29 @@ def predict(test, y, weights):
 if __name__ == "__main__":
     train, test, y, y_test = read_csv()
 
-    SGD(train, y)
-    plt.step(x=np.arange(0, STEP_COUNT, 1),y=COST_LIST)
-    plt.xlabel("Update Step")
-    plt.ylabel("Cost Function Value")
-    plt.title("Stochastic Gradient Descent")
-    print(f"Wight Vector: {WEIGHT_LIST[-1]}\r\n")
-    print(f"Learning Rate: {LEARNING_RATE}\r\n")
-    predict(test, y_test, WEIGHT_LIST[-1])
-
-    plt.show()
-
-
     batch_descent(train, y)
 
     plt.step(x=np.arange(0, STEP_COUNT, 1),y=COST_LIST)
     plt.xlabel("Update Step")
     plt.ylabel("Cost Function Value")
     plt.title("Batch Descent")
-    print(f"Wight Vector: {WEIGHT_LIST[-1]}\r\n")
-    print(f"Learning Rate: {LEARNING_RATE}\r\n")
-
+    print(f"BD Weight Vector: {WEIGHT_LIST[-1]}")
+    print(f"BD Learning Rate: {LEARNING_RATE}")
     predict(test, y_test, WEIGHT_LIST[-1])
 
-    plt.show()
+    #plt.show()
+
+    SGD(train, y)
+    plt.step(x=np.arange(0, STEP_COUNT, 1),y=COST_LIST)
+    plt.xlabel("Update Step")
+    plt.ylabel("Cost Function Value")
+    plt.title("Stochastic Gradient Descent")
+    print(f"SGD Weight Vector: {WEIGHT_LIST[-1]}")
+    print(f"SGD Learning Rate: {LEARNING_RATE}")
+    predict(test, y_test, WEIGHT_LIST[-1])
+
+    #plt.show()
+
+    #w = np.dot(np.linalg.inv(np.dot(test.T, test)), np.dot(test.T, y_test))   
+    #print(w.T)
 

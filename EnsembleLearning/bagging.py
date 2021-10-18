@@ -73,10 +73,8 @@ class Bagging:
         self.no_classifiers = no_classifiers
         self.classifiers = []
 
-    def fit(self):
+    def fit(self, train, attributes, labels):
         for i in range(self.no_classifiers):
-
-            train, test, attributes, labels = read_csv()
 
             X = train.sample(train.shape[0], replace=True, ignore_index=True)
             
@@ -105,52 +103,126 @@ class Bagging:
         return final_prediction.mode(axis=1)[0]
 
 if __name__ == "__main__":
-    data_upload_test = []
-    data_upload_train = []
-    for size in range(1, 101):
-        train, test, attributes, labels = read_csv()
+    # data_upload_test = []
+    # data_upload_train = []
+    # for size in range(1, 101):
+    #     train, test, attributes, labels = read_csv()
 
-        bag = Bagging(no_classifiers=size)
-        bag.fit()
-        test_pred = bag.bag_predict(test)
-        train_pred = bag.bag_predict(train)
+    #     bag = Bagging(no_classifiers=size)
+    #     bag.fit(train, attributes, labels)
+    #     test_pred = bag.bag_predict(test)
+    #     train_pred = bag.bag_predict(train)
 
-        # Calculate Testing Error
-        target = test["label"].copy().to_numpy()
-        target[target == "no"] = -1
-        target[target == "yes"] = 1
-        target = target.astype(float)
+    #     # Calculate Testing Error
+    #     target = test["label"].copy().to_numpy()
+    #     target[target == "no"] = -1
+    #     target[target == "yes"] = 1
+    #     target = target.astype(float)
 
-        errors = 0
-        for i in range(len(target)):
-            if target[i] != test_pred[i]:
-                errors += 1
+    #     errors = 0
+    #     for i in range(len(target)):
+    #         if target[i] != test_pred[i]:
+    #             errors += 1
 
-        test_error = (errors / len(test))*100
+    #     test_error = (errors / len(test))*100
 
-        print(f"TEST ERROR {size}: {test_error}")
-        data_upload_test.append(test_error)
+    #     print(f"TEST ERROR {size}: {test_error}")
+    #     data_upload_test.append(test_error)
 
-        # Calculate Train Error
-        target = train["label"].copy().to_numpy()
-        target[target == "no"] = -1
-        target[target == "yes"] = 1
-        target = target.astype(float)
+    #     # Calculate Train Error
+    #     target = train["label"].copy().to_numpy()
+    #     target[target == "no"] = -1
+    #     target[target == "yes"] = 1
+    #     target = target.astype(float)
 
-        errors = 0
-        for i in range(len(target)):
-            if target[i] != train_pred[i]:
-                errors += 1
+    #     errors = 0
+    #     for i in range(len(target)):
+    #         if target[i] != train_pred[i]:
+    #             errors += 1
 
-        train_error = (errors / len(train))*100
+    #     train_error = (errors / len(train))*100
 
-        print(f"TRAIN ERROR {size}: {train_error}")
-        data_upload_train.append(train_error)
+    #     print(f"TRAIN ERROR {size}: {train_error}")
+    #     data_upload_train.append(train_error)
     
-    with open('bag_test.txt', 'w') as f:
-        for item in data_upload_test:
-            f.write("%s\n" % item)
+    # with open('bag_test.txt', 'w') as f:
+    #     for item in data_upload_test:
+    #         f.write("%s\n" % item)
 
-    with open('bag_train.txt', 'w') as f:
-        for item in data_upload_train:
-            f.write("%s\n" % item)
+    # with open('bag_train.txt', 'w') as f:
+    #     for item in data_upload_train:
+    #         f.write("%s\n" % item)
+
+    # Bias and Variance decomposition experiment
+    predictors = []
+    for i in range(1, 3):
+        train, test, attributes, labels = read_csv()
+        sample = train.sample(1000, replace=False, ignore_index=True)
+        bag = Bagging(no_classifiers=2)
+        bag.fit(train, attributes, labels)
+        predictors.append(copy.copy(bag))
+
+    # using single trees
+    single_trees = []
+    for p in predictors:
+        single_trees.append(copy.copy(p.classifiers[0]))
+
+    single_predictions = []
+    for t in single_trees:
+        temp_pred = np.zeros(test.shape[0])
+        for index, row in test.iterrows():
+            pred = predict(row, t)
+            if pred == "no":
+                temp_pred[index] = -1
+            else:
+                temp_pred[index] = 1
+        single_predictions.append(temp_pred)
+
+    # Calculating Bias
+    avg_single_predictions = np.mean(single_predictions, axis=0)
+
+    target = test["label"].copy().to_numpy()
+    target[target == "no"] = -1
+    target[target == "yes"] = 1
+    target = target.astype(float)
+
+    bias = np.square(avg_single_predictions - target)
+
+    # Calculating Variance
+    variance = np.var(single_predictions, axis=0)
+
+    # General bias and variance
+    general_bias = np.mean(bias)
+    general_variance = np.mean(variance)
+    general_sqerror = general_bias + general_variance
+
+    print(general_bias)
+    print(general_variance)
+    print(general_sqerror)
+
+    bagged_predictions = []
+    for p in predictors:
+        temp_pred = p.bag_predict(test)
+        bagged_predictions.append(temp_pred)
+
+    # Calculating Bias
+    avg_bagged_predictions = np.mean(bagged_predictions, axis=0)
+
+    bias = np.square(avg_bagged_predictions - target)
+
+    # Calculating Variance
+    variance = np.var(bagged_predictions, axis=0)
+
+    # General bias and variance
+    general_bias = np.mean(bias)
+    general_variance = np.mean(variance)
+    general_sqerror = general_bias + general_variance
+
+    print(general_bias)
+    print(general_variance)
+    print(general_sqerror)
+            
+
+    
+    
+

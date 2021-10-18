@@ -135,8 +135,6 @@ class Adaboost:
     
         y_pred = np.sign(np.dot(self.alphas, test_pred))
 
-    
-
 if __name__ == "__main__":
     data_upload_test = []
     data_upload_train = []
