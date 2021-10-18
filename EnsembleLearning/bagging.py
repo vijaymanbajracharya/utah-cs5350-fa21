@@ -102,6 +102,65 @@ class Bagging:
 
         return final_prediction.mode(axis=1)[0]
 
+def singletree_bv(predictors, target):
+    # using single trees
+    single_trees = []
+    for p in predictors:
+        single_trees.append(copy.copy(p.classifiers[0]))
+
+    single_predictions = []
+    for t in single_trees:
+        temp_pred = np.zeros(test.shape[0])
+        for index, row in test.iterrows():
+            pred = predict(row, t)
+            if pred == "no":
+                temp_pred[index] = -1
+            else:
+                temp_pred[index] = 1
+        single_predictions.append(temp_pred)
+
+    # Calculating Bias
+    avg_single_predictions = np.mean(single_predictions, axis=0)
+
+    bias = np.square(avg_single_predictions - target)
+
+    # Calculating Variance
+    variance = np.var(single_predictions, axis=0)
+
+    # General bias and variance
+    general_bias = np.mean(bias)
+    general_variance = np.mean(variance)
+    general_sqerror = general_bias + general_variance
+
+    print(general_bias)
+    print(general_variance)
+    print(general_sqerror)
+
+def baggedtree_bv(predictors, target):
+    bagged_predictions = []
+    for p in predictors:
+        train, test, attributes, labels = read_csv()
+        temp_pred = p.bag_predict(test)
+        bagged_predictions.append(temp_pred)
+
+    # Calculating Bias
+    avg_bagged_predictions = np.mean(bagged_predictions, axis=0)
+
+    bias = np.square(avg_bagged_predictions - target)
+
+    # Calculating Variance
+    variance = np.var(bagged_predictions, axis=0)
+
+    # General bias and variance
+    general_bias = np.mean(bias)
+    general_variance = np.mean(variance)
+    general_sqerror = general_bias + general_variance
+
+    print(general_bias)
+    print(general_variance)
+    print(general_sqerror)
+
+
 if __name__ == "__main__":
     # data_upload_test = []
     # data_upload_train = []
@@ -158,69 +217,18 @@ if __name__ == "__main__":
     for i in range(1, 101):
         train, test, attributes, labels = read_csv()
         sample = train.sample(1000, replace=False, ignore_index=True)
-        bag = Bagging(no_classifiers=50)
+        bag = Bagging(no_classifiers=25)
         bag.fit(train, attributes, labels)
         predictors.append(copy.copy(bag))
 
-    # using single trees
-    single_trees = []
-    for p in predictors:
-        single_trees.append(copy.copy(p.classifiers[0]))
-
-    single_predictions = []
-    for t in single_trees:
-        temp_pred = np.zeros(test.shape[0])
-        for index, row in test.iterrows():
-            pred = predict(row, t)
-            if pred == "no":
-                temp_pred[index] = -1
-            else:
-                temp_pred[index] = 1
-        single_predictions.append(temp_pred)
-
-    # Calculating Bias
-    avg_single_predictions = np.mean(single_predictions, axis=0)
+    train, test, attributes, labels = read_csv()
 
     target = test["label"].copy().to_numpy()
     target[target == "no"] = -1
     target[target == "yes"] = 1
     target = target.astype(float)
 
-    bias = np.square(avg_single_predictions - target)
-
-    # Calculating Variance
-    variance = np.var(single_predictions, axis=0)
-
-    # General bias and variance
-    general_bias = np.mean(bias)
-    general_variance = np.mean(variance)
-    general_sqerror = general_bias + general_variance
-
-    print(general_bias)
-    print(general_variance)
-    print(general_sqerror)
-
-    bagged_predictions = []
-    for p in predictors:
-        temp_pred = p.bag_predict(test)
-        bagged_predictions.append(temp_pred)
-
-    # Calculating Bias
-    avg_bagged_predictions = np.mean(bagged_predictions, axis=0)
-
-    bias = np.square(avg_bagged_predictions - target)
-
-    # Calculating Variance
-    variance = np.var(bagged_predictions, axis=0)
-
-    # General bias and variance
-    general_bias = np.mean(bias)
-    general_variance = np.mean(variance)
-    general_sqerror = general_bias + general_variance
-
-    print(general_bias)
-    print(general_variance)
-    print(general_sqerror)
+    baggedtree_bv(predictors, target)
             
 
     

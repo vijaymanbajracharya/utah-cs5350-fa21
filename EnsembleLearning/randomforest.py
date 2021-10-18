@@ -107,10 +107,10 @@ class RandomForest:
 if __name__ == "__main__":
     data_upload_test = []
     data_upload_train = []
-    for size in range(100, 501):
+    for size in range(1, 101):
         train, test, attributes, labels = read_csv()
 
-        rf = RandomForest(no_classifiers=size, G=6)
+        rf = RandomForest(no_classifiers=size, G=2)
         rf.rf_fit()
         test_pred = rf.rf_predict(test)
         train_pred = rf.rf_predict(train)
