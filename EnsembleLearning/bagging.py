@@ -155,10 +155,10 @@ if __name__ == "__main__":
 
     # Bias and Variance decomposition experiment
     predictors = []
-    for i in range(1, 3):
+    for i in range(1, 101):
         train, test, attributes, labels = read_csv()
         sample = train.sample(1000, replace=False, ignore_index=True)
-        bag = Bagging(no_classifiers=2)
+        bag = Bagging(no_classifiers=50)
         bag.fit(train, attributes, labels)
         predictors.append(copy.copy(bag))
 
