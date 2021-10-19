@@ -132,8 +132,8 @@ class Adaboost:
                 if target[i] != train_pred[i]:
                     train_errors += 1
 
-            print(f"TRAIN {j+1}: {(train_errors/m)*100}")
-            print(f"TEST {j+1}: {(test_errors/m)*100}")
+            print(f"TRAIN {self.no_classifiers}: {(train_errors/m)*100}")
+            print(f"TEST {self.no_classifiers}: {(test_errors/m)*100}")
 
             #################################
 

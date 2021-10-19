@@ -4,8 +4,8 @@ import numpy as np
 import sys
 import time
 import copy
-#sys.path.append("../")
-sys.path.append("utah-cs5350-fa21/")
+sys.path.append("../")
+#sys.path.append("utah-cs5350-fa21/")
 from DecisionTree.id3 import DecisionTreeClassifier
 
 def read_csv():
@@ -38,10 +38,10 @@ def read_csv():
         if(c.strip()):
             table.append(c.strip())
 
-    #train = pd.read_csv("bank/train.csv", names=table)
-    #test = pd.read_csv("bank/test.csv", names=table)
-    train = pd.read_csv("utah-cs5350-fa21/DecisionTree/bank/train.csv", names=table)
-    test = pd.read_csv("utah-cs5350-fa21/DecisionTree/bank/test.csv", names=table)
+    train = pd.read_csv("bank/train.csv", names=table)
+    test = pd.read_csv("bank/test.csv", names=table)
+    #train = pd.read_csv("utah-cs5350-fa21/DecisionTree/bank/train.csv", names=table)
+    #test = pd.read_csv("utah-cs5350-fa21/DecisionTree/bank/test.csv", names=table)
 
     # Binarize the numerical data
     numerical_cols = ["age", "balance", "day", "duration", "campaign", "pdays", "previous"]
@@ -64,7 +64,7 @@ def predict(row, root):
     
     if root.value == "yes":
         return "yes"
-        
+
     value = row[root.value]
     for branches in root.edge:
         if branches.feature_value == value:
@@ -220,10 +220,10 @@ if __name__ == "__main__":
     #Uncomment this section to for bias/variance tradeoff experiment between bagged trees and single trees
     #Bias and Variance decomposition experiment
     predictors = []
-    for i in range(1, 3):
+    for i in range(1, 101):
         train, test, attributes, labels = read_csv()
         sample = train.sample(1000, replace=False, ignore_index=True)
-        rf = RandomForest(no_classifiers=2)
+        rf = RandomForest(no_classifiers=101, G=6)
         rf.rf_fit(train, attributes, labels)
         predictors.append(copy.copy(rf))
 

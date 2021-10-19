@@ -168,47 +168,47 @@ def baggedtree_bv(predictors, target):
 
 
 if __name__ == "__main__":
-    # data_upload_test = []
-    # data_upload_train = []
-    # for size in range(1, 101):
-    #     train, test, attributes, labels = read_csv()
+    data_upload_test = []
+    data_upload_train = []
+    for size in range(1, 101):
+        train, test, attributes, labels = read_csv()
 
-    #     bag = Bagging(no_classifiers=size)
-    #     bag.fit(train, attributes, labels)
-    #     test_pred = bag.bag_predict(test)
-    #     train_pred = bag.bag_predict(train)
+        bag = Bagging(no_classifiers=size)
+        bag.fit(train, attributes, labels)
+        test_pred = bag.bag_predict(test)
+        train_pred = bag.bag_predict(train)
 
-    #     # Calculate Testing Error
-    #     target = test["label"].copy().to_numpy()
-    #     target[target == "no"] = -1
-    #     target[target == "yes"] = 1
-    #     target = target.astype(float)
+        # Calculate Testing Error
+        target = test["label"].copy().to_numpy()
+        target[target == "no"] = -1
+        target[target == "yes"] = 1
+        target = target.astype(float)
 
-    #     errors = 0
-    #     for i in range(len(target)):
-    #         if target[i] != test_pred[i]:
-    #             errors += 1
+        errors = 0
+        for i in range(len(target)):
+            if target[i] != test_pred[i]:
+                errors += 1
 
-    #     test_error = (errors / len(test))*100
+        test_error = (errors / len(test))*100
 
-    #     print(f"TEST ERROR {size}: {test_error}")
-    #     data_upload_test.append(test_error)
+        print(f"TEST ERROR {size}: {test_error}")
+        data_upload_test.append(test_error)
 
-    #     # Calculate Train Error
-    #     target = train["label"].copy().to_numpy()
-    #     target[target == "no"] = -1
-    #     target[target == "yes"] = 1
-    #     target = target.astype(float)
+        # Calculate Train Error
+        target = train["label"].copy().to_numpy()
+        target[target == "no"] = -1
+        target[target == "yes"] = 1
+        target = target.astype(float)
 
-    #     errors = 0
-    #     for i in range(len(target)):
-    #         if target[i] != train_pred[i]:
-    #             errors += 1
+        errors = 0
+        for i in range(len(target)):
+            if target[i] != train_pred[i]:
+                errors += 1
 
-    #     train_error = (errors / len(train))*100
+        train_error = (errors / len(train))*100
 
-    #     print(f"TRAIN ERROR {size}: {train_error}")
-    #     data_upload_train.append(train_error)
+        print(f"TRAIN ERROR {size}: {train_error}")
+        data_upload_train.append(train_error)
     
     # UNCOMMENT IF WRITE TO FILE
     # with open('bag_test.txt', 'w') as f:
@@ -221,23 +221,23 @@ if __name__ == "__main__":
 
     # Uncomment this section to for bias/variance tradeoff experiment between bagged trees and single trees
     # Bias and Variance decomposition experiment
-    predictors = []
-    for i in range(1, 101):
-        train, test, attributes, labels = read_csv()
-        sample = train.sample(1000, replace=False, ignore_index=True)
-        bag = Bagging(no_classifiers=25)
-        bag.fit(train, attributes, labels)
-        predictors.append(copy.copy(bag))
+    # predictors = []
+    # for i in range(1, 101):
+    #     train, test, attributes, labels = read_csv()
+    #     sample = train.sample(1000, replace=False, ignore_index=True)
+    #     bag = Bagging(no_classifiers=100)
+    #     bag.fit(train, attributes, labels)
+    #     predictors.append(copy.copy(bag))
 
-    train, test, attributes, labels = read_csv()
+    # train, test, attributes, labels = read_csv()
 
-    target = test["label"].copy().to_numpy()
-    target[target == "no"] = -1
-    target[target == "yes"] = 1
-    target = target.astype(float)
+    # target = test["label"].copy().to_numpy()
+    # target[target == "no"] = -1
+    # target[target == "yes"] = 1
+    # target = target.astype(float)
 
-    singletree_bv(predictors, target)
-    baggedtree_bv(predictors, target)
+    # singletree_bv(predictors, target)
+    # baggedtree_bv(predictors, target)
             
 
     
