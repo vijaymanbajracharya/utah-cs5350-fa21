@@ -59,14 +59,20 @@ def read_csv():
     return train, test, attributes, labels
 
 def predict(row, root):
-        value = row[root.value]
-        for branches in root.edge:
-            if branches.feature_value == value:
-                if branches.edge is None:
-                    pred = branches.value
-                else:
-                    pred = predict(row, branches)
-        return pred
+    if root.value == "no":
+        return "no"
+    
+    if root.value == "yes":
+        return "yes"
+
+    value = row[root.value]
+    for branches in root.edge:
+        if branches.feature_value == value:
+            if branches.edge is None:
+                pred = branches.value
+            else:
+                pred = predict(row, branches)
+    return pred
 
 class Bagging:
     def __init__(self, no_classifiers=5):
@@ -78,7 +84,7 @@ class Bagging:
 
             X = train.sample(train.shape[0], replace=True, ignore_index=True)
             
-            tree = DecisionTreeClassifier().create_tree(X, X, attributes, labels, gain="info_gain", maxdepth=10000)
+            tree = DecisionTreeClassifier().create_tree(X, X, attributes.copy(), labels, gain="info_gain", maxdepth=10000)
 
             self.classifiers.append(copy.copy(tree))
                 
@@ -204,6 +210,7 @@ if __name__ == "__main__":
     #     print(f"TRAIN ERROR {size}: {train_error}")
     #     data_upload_train.append(train_error)
     
+    # UNCOMMENT IF WRITE TO FILE
     # with open('bag_test.txt', 'w') as f:
     #     for item in data_upload_test:
     #         f.write("%s\n" % item)
@@ -212,6 +219,7 @@ if __name__ == "__main__":
     #     for item in data_upload_train:
     #         f.write("%s\n" % item)
 
+    # Uncomment this section to for bias/variance tradeoff experiment between bagged trees and single trees
     # Bias and Variance decomposition experiment
     predictors = []
     for i in range(1, 101):
@@ -228,6 +236,7 @@ if __name__ == "__main__":
     target[target == "yes"] = 1
     target = target.astype(float)
 
+    singletree_bv(predictors, target)
     baggedtree_bv(predictors, target)
             
 
