@@ -8,7 +8,7 @@ Specific Instructions to modify python scripts for testing purposes (Assignemnt 
 All of the scripts have comment blocks to indicate code that was used in performing experiments for the written report.
 Uncomment these sections using the following guidelines to verify experiment results.
 
-There is a seprate run.sh within EnsembleLearning folder and LinearRegression folder.
+There is a shell script that runs all the python files. However, they take a long time to execute so that python files for this assignment are in EnsembleLearning and LinearRegression folder
 
 #################
 Ensemble Learning
