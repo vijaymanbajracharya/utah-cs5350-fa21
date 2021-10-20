@@ -8,6 +8,8 @@ Specific Instructions to modify python scripts for testing purposes (Assignemnt 
 All of the scripts have comment blocks to indicate code that was used in performing experiments for the written report.
 Uncomment these sections using the following guidelines to verify experiment results.
 
+There is a seprate run.sh within EnsembleLearning folder and LinearRegression folder.
+
 #################
 Ensemble Learning
 #################
@@ -22,7 +24,7 @@ file: adaboost.py
 
 
 
-file: bagging.
+file: bagging.py
 
 -> Modify size of for loop in main method to change the number of trees in bagging
 
