@@ -8,7 +8,7 @@ Specific Instructions to modify python scripts for testing purposes (Assignemnt 
 All of the scripts have comment blocks to indicate code that was used in performing experiments for the written report.
 Uncomment these sections using the following guidelines to verify experiment results.
 
-There is a shell script that runs all the python files. However, they take a long time to execute so that python files for this assignment are in EnsembleLearning and LinearRegression folder
+There are two separate run.sh files one in EnsembleLearning directory and the other in LinearRegression directory
 
 #################
 Ensemble Learning
