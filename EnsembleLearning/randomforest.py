@@ -166,49 +166,51 @@ def randomforest_bv(predictors, target):
     print(general_sqerror)
 
 if __name__ == "__main__":
-    # data_upload_test = []
-    # data_upload_train = []
-    # for size in range(1, 101):
-    #     train, test, attributes, labels = read_csv()
+    data_upload_test = []
+    data_upload_train = []
+    for size in range(1, 501):
+        train, test, attributes, labels = read_csv()
 
-    #     rf = RandomForest(no_classifiers=size, G=6)
-    #     rf.rf_fit(train, attributes, labels)
-    #     test_pred = rf.rf_predict(test)
-    #     train_pred = rf.rf_predict(train)
+        rf = RandomForest(no_classifiers=size, G=6)
+        rf.rf_fit(train, attributes, labels)
+        test_pred = rf.rf_predict(test)
+        train_pred = rf.rf_predict(train)
 
-    #     # Calculate Testing Error
-    #     target = test["label"].copy().to_numpy()
-    #     target[target == "no"] = -1
-    #     target[target == "yes"] = 1
-    #     target = target.astype(float)
+        # Calculate Testing Error
+        target = test["label"].copy().to_numpy()
+        target[target == "no"] = -1
+        target[target == "yes"] = 1
+        target = target.astype(float)
 
-    #     errors = 0
-    #     for i in range(len(target)):
-    #         if target[i] != test_pred[i]:
-    #             errors += 1
+        errors = 0
+        for i in range(len(target)):
+            if target[i] != test_pred[i]:
+                errors += 1
 
-    #     test_error = (errors / len(test))*100
+        test_error = (errors / len(test))*100
 
-    #     print(f"TEST ERROR {size}: {test_error}")
-    #     data_upload_test.append(test_error)
+        print(f"TEST ERROR {size}: {test_error}")
+        data_upload_test.append(test_error)
 
-    #     # Calculate Train Error
-    #     target = train["label"].copy().to_numpy()
-    #     target[target == "no"] = -1
-    #     target[target == "yes"] = 1
-    #     target = target.astype(float)
+        # Calculate Train Error
+        target = train["label"].copy().to_numpy()
+        target[target == "no"] = -1
+        target[target == "yes"] = 1
+        target = target.astype(float)
 
-    #     errors = 0
-    #     for i in range(len(target)):
-    #         if target[i] != train_pred[i]:
-    #             errors += 1
+        errors = 0
+        for i in range(len(target)):
+            if target[i] != train_pred[i]:
+                errors += 1
 
-    #     train_error = (errors / len(train))*100
+        train_error = (errors / len(train))*100
 
-    #     print(f"TRAIN ERROR {size}: {train_error}")
-    #     data_upload_train.append(train_error)
+        print(f"TRAIN ERROR {size}: {train_error}")
+        data_upload_train.append(train_error)
 
-    # UNCOMMENT IF WRITE TO FILE
+    ##############################
+    # UNCOMMENT TO WRITE TO FILE #
+    ##############################
     # with open('rf_test.txt', 'w') as f:
     #     for item in data_upload_test:
     #         f.write("%s\n" % item)
@@ -217,22 +219,24 @@ if __name__ == "__main__":
     #     for item in data_upload_train:
     #         f.write("%s\n" % item)
 
-    #Uncomment this section to for bias/variance tradeoff experiment between bagged trees and single trees
+    ######################################################
+    # UNCOMMENT TO FOR BIAS/VARIANCE TRADEOFF EXPERIMENT #
+    ######################################################
     #Bias and Variance decomposition experiment
-    predictors = []
-    for i in range(1, 101):
-        train, test, attributes, labels = read_csv()
-        sample = train.sample(1000, replace=False, ignore_index=True)
-        rf = RandomForest(no_classifiers=101, G=6)
-        rf.rf_fit(train, attributes, labels)
-        predictors.append(copy.copy(rf))
+    # predictors = []
+    # for i in range(1, 101):
+    #     train, test, attributes, labels = read_csv()
+    #     sample = train.sample(1000, replace=False, ignore_index=True)
+    #     rf = RandomForest(no_classifiers=101, G=6)
+    #     rf.rf_fit(train, attributes, labels)
+    #     predictors.append(copy.copy(rf))
 
-    train, test, attributes, labels = read_csv()
+    # train, test, attributes, labels = read_csv()
 
-    target = test["label"].copy().to_numpy()
-    target[target == "no"] = -1
-    target[target == "yes"] = 1
-    target = target.astype(float)
+    # target = test["label"].copy().to_numpy()
+    # target[target == "no"] = -1
+    # target[target == "yes"] = 1
+    # target = target.astype(float)
 
-    singletree_bv(predictors, target)
-    randomforest_bv(predictors, target)
+    # singletree_bv(predictors, target)
+    # randomforest_bv(predictors, target)

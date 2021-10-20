@@ -108,34 +108,38 @@ class Adaboost:
             target[target == "yes"] = 1
             target = target.astype(float)
 
-            #################################
-            # UNCOMMENT THIS PART TO CALCULATE INDIVIDUAL STUMP ERRORS
+            ############################################################
+            # UNCOMMENT THIS PART TO CALCULATE INDIVIDUAL STUMP ERRORS #
+            ############################################################
             # Calculate on the fly train and test errors for plotting purposes
             # On the fly test error
+            
 
-            test_pred = np.zeros(m, dtype=np.float64)
-            for index, row in test.iterrows():
-                pred = predict(row, h)
-                if pred == "no":
-                    test_pred[index] = -1
-                else:
-                    test_pred[index] = 1
+            # test_pred = np.zeros(m, dtype=np.float64)
+            # for index, row in test.iterrows():
+            #     pred = predict(row, h)
+            #     if pred == "no":
+            #         test_pred[index] = -1
+            #     else:
+            #         test_pred[index] = 1
 
-            test_errors = 0
-            for i in range(len(target)):
-                if target[i] != test_pred[i]:
-                    test_errors += 1
+            # test_errors = 0
+            # for i in range(len(target)):
+            #     if target[i] != test_pred[i]:
+            #         test_errors += 1
 
-            # On the fly train error
-            train_errors = 0
-            for i in range(len(target)):
-                if target[i] != train_pred[i]:
-                    train_errors += 1
+            # # On the fly train error
+            # train_errors = 0
+            # for i in range(len(target)):
+            #     if target[i] != train_pred[i]:
+            #         train_errors += 1
 
-            print(f"TRAIN {self.no_classifiers}: {(train_errors/m)*100}")
-            print(f"TEST {self.no_classifiers}: {(test_errors/m)*100}")
+            # print(f"TRAIN {self.no_classifiers}: {(train_errors/m)*100}")
+            # print(f"TEST {self.no_classifiers}: {(test_errors/m)*100}")
 
-            #################################
+            ############################################################
+            # UNCOMMENT THIS PART TO CALCULATE INDIVIDUAL STUMP ERRORS #
+            ############################################################
 
             weights = train["weights"].copy().to_numpy()
             weights = weights.astype(float)
@@ -171,49 +175,51 @@ class Adaboost:
         y_pred = np.sign(np.dot(self.alphas, test_pred))
 
 if __name__ == "__main__":
-    # data_upload_test = []
-    # data_upload_train = []
-    # for size in range(1, 101):
-    #     train, test, attributes, labels = read_csv()
+    data_upload_test = []
+    data_upload_train = []
+    for size in range(1, 501):
+        train, test, attributes, labels = read_csv()
 
-    #     # Train 
-    #     ada = Adaboost(no_classifiers=size)
-    #     ada.ada_fit(train.shape[0])
-    #     train_pred = np.sign(np.dot(ada.alphas, ada.preds))
-    #     test_pred = ada.ada_predict(test)
+        # Train 
+        ada = Adaboost(no_classifiers=size)
+        ada.ada_fit(train.shape[0])
+        train_pred = np.sign(np.dot(ada.alphas, ada.preds))
+        test_pred = ada.ada_predict(test)
 
-    #     # Calculate Testing Error
-    #     target = test["label"].copy().to_numpy()
-    #     target[target == "no"] = -1
-    #     target[target == "yes"] = 1
-    #     target = target.astype(float)
+        # Calculate Testing Error
+        target = test["label"].copy().to_numpy()
+        target[target == "no"] = -1
+        target[target == "yes"] = 1
+        target = target.astype(float)
 
-    #     errors = 0
-    #     for i in range(len(target)):
-    #         if target[i] != train_pred[i]:
-    #             errors += 1
+        errors = 0
+        for i in range(len(target)):
+            if target[i] != train_pred[i]:
+                errors += 1
 
-    #     test_error = (errors / len(test))*100
-    #     print(f"TEST ERROR {size}: {test_error}")
-    #     data_upload_test.append(test_error)
+        test_error = (errors / len(test))*100
+        print(f"TEST ERROR {size}: {test_error}")
+        data_upload_test.append(test_error)
 
 
-    #     # Calculate Trainning Error
-    #     target = train["label"].copy().to_numpy()
-    #     target[target == "no"] = -1
-    #     target[target == "yes"] = 1
-    #     target = target.astype(float)
+        # Calculate Trainning Error
+        target = train["label"].copy().to_numpy()
+        target[target == "no"] = -1
+        target[target == "yes"] = 1
+        target = target.astype(float)
 
-    #     errors = 0
-    #     for i in range(len(target)):
-    #         if target[i] != train_pred[i]:
-    #             errors += 1
+        errors = 0
+        for i in range(len(target)):
+            if target[i] != train_pred[i]:
+                errors += 1
 
-    #     train_error = (errors / len(train))*100
-    #     print(f"TRAIN ERROR {size}: {train_error}")
-    #     data_upload_train.append(train_error)
+        train_error = (errors / len(train))*100
+        print(f"TRAIN ERROR {size}: {train_error}")
+        data_upload_train.append(train_error)
     
-    # UNCOMMENT IF WRITE TO FILE
+    ##############################
+    # UNCOMMENT TO WRITE TO FILE #
+    ##############################
     # with open('ada_test.txt', 'w') as f:
     #     for item in data_upload_test:
     #         f.write("%s\n" % item)
@@ -222,12 +228,14 @@ if __name__ == "__main__":
     #     for item in data_upload_train:
     #         f.write("%s\n" % item)
 
-    # UNCOMMENT FOR INDIVIDUAL STUMP ERRORS
-    for size in range(1, 301):
-        train, test, attributes, labels = read_csv()
-        # Train 
-        ada = Adaboost(no_classifiers=size)
-        ada.ada_fit(train.shape[0])
+    #########################################
+    # UNCOMMENT FOR INDIVIDUAL STUMP ERRORS #
+    #########################################
+    # for size in range(1, 301):
+    #     train, test, attributes, labels = read_csv()
+    #     # Train 
+    #     ada = Adaboost(no_classifiers=size)
+    #     ada.ada_fit(train.shape[0])
 
     
 

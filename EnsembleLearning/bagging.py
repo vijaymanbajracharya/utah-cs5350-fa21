@@ -170,7 +170,7 @@ def baggedtree_bv(predictors, target):
 if __name__ == "__main__":
     data_upload_test = []
     data_upload_train = []
-    for size in range(1, 101):
+    for size in range(1, 501):
         train, test, attributes, labels = read_csv()
 
         bag = Bagging(no_classifiers=size)
@@ -210,7 +210,9 @@ if __name__ == "__main__":
         print(f"TRAIN ERROR {size}: {train_error}")
         data_upload_train.append(train_error)
     
-    # UNCOMMENT IF WRITE TO FILE
+    ##############################
+    # UNCOMMENT TO WRITE TO FILE #
+    ##############################
     # with open('bag_test.txt', 'w') as f:
     #     for item in data_upload_test:
     #         f.write("%s\n" % item)
@@ -219,7 +221,10 @@ if __name__ == "__main__":
     #     for item in data_upload_train:
     #         f.write("%s\n" % item)
 
-    # Uncomment this section to for bias/variance tradeoff experiment between bagged trees and single trees
+
+    ######################################################
+    # UNCOMMENT TO FOR BIAS/VARIANCE TRADEOFF EXPERIMENT #
+    ######################################################
     # Bias and Variance decomposition experiment
     # predictors = []
     # for i in range(1, 101):
