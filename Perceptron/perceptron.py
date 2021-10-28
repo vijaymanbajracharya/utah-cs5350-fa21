@@ -46,6 +46,12 @@ def calculate_error(X, y, weights):
 
     return errors / X.shape[0]
 
+def shuffle(X, y):
+    shuffler = np.random.permutation(len(X))
+    X_shuffled = X[shuffler]
+    y_shuffled = y[shuffler]
+    return X_shuffled, y_shuffled
+
 class Perceptron:
     def __init__(self):
         self.weights_list = []
@@ -56,14 +62,16 @@ class Perceptron:
 
         for i in range(EPOCHS):
             index = 0
-            for row in train:
+            train_shuffled, y_shuffled = shuffle(train, y)
+            for row in train_shuffled:
                 row = row[:,np.newaxis]
                 prediction = np.sign(np.dot(weights.T, row))
-                if y[index] != prediction:
-                    weights = weights + LEARNING_RATE * (y[index] * row)
+                if y_shuffled[index] != prediction:
+                    weights = weights + LEARNING_RATE * (y_shuffled[index] * row)
                     self.weights_list.append(weights)
 
                 index += 1
+
 
 if __name__ == "__main__":
     train, test, y, y_test = read_csv()
