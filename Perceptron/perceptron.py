@@ -37,8 +37,21 @@ def read_csv():
 
     return train, test, y, y_test
 
-def calculate_error(X, y, weights):
+def calculate_error_std(X, y, weights):
     predictions = np.sign(np.dot(X, weights))
+    errors = 0
+    for i in range(X.shape[0]):
+        if predictions[i] != y[i]:
+            errors += 1
+
+    return errors / X.shape[0]
+
+def calculate_error_voted(X, y, weights):
+    sum = np.zeros((X.shape[0],1))
+    for tuple in weights:
+        sum = sum + tuple[1] * np.sign(np.dot(X, tuple[0]))
+
+    predictions = np.sign(sum)
     errors = 0
     for i in range(X.shape[0]):
         if predictions[i] != y[i]:
@@ -72,13 +85,48 @@ class Perceptron:
 
                 index += 1
 
+class VotedPerceptron:
+    def __init__(self):
+        self.weights_list = []
+
+    def fit(self, train, y):
+        weights = np.zeros((train.shape[1], 1))
+        self.weights_list.append((weights, 1))
+
+        for i in range(EPOCHS):
+            index = 0
+            train_shuffled, y_shuffled = shuffle(train, y)
+            for row in train_shuffled:
+                row = row[:,np.newaxis]
+                prediction = np.sign(np.dot(weights.T, row))
+                if y_shuffled[index] != prediction:
+                    weights = weights + LEARNING_RATE * (y_shuffled[index] * row)
+                    self.weights_list.append((weights, 1))
+                else:
+                    self.weights_list[-1] = (weights, self.weights_list[-1][1] + 1)
+
+                index += 1
 
 if __name__ == "__main__":
+    # Standard Perceptron
+    print("Standard Perceptron Algorithm")
     train, test, y, y_test = read_csv()
     p = Perceptron()
     p.fit(train, y)
     learned_weights = p.weights_list[-1]
     print(f"Learned Weight Vector: {learned_weights.T}")
-    test_error = calculate_error(test, y_test, learned_weights)
-    print(f"Error: {test_error*100}%")
+    test_error = calculate_error_std(test, y_test, learned_weights)
+    print(f"Test Error: {test_error*100}%")
+    print("\r\n")
+
+    # Voted Perceptron
+    print("Voted Perceptron Algorithm")
+    train, test, y, y_test = read_csv()
+    vp = VotedPerceptron()
+    vp.fit(train, y)
+    test_error = calculate_error_voted(test, y_test, vp.weights_list)
+    print(f"Test Error: {test_error*100}%")
+    print("\r\n")
+
+
 
