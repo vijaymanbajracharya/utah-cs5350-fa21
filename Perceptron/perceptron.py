@@ -104,11 +104,12 @@ class VotedPerceptron:
 
         for i in range(EPOCHS):
             index = 0
-            for row in train:
+            train_shuffled, y_shuffled = shuffle(train, y)
+            for row in train_shuffled:
                 row = row[:,np.newaxis]
                 prediction = np.sign(np.dot(weights.T, row))
-                if y[index] != prediction:
-                    weights = weights + LEARNING_RATE * (y[index] * row)
+                if y_shuffled[index] != prediction:
+                    weights = weights + LEARNING_RATE * (y_shuffled[index] * row)
                     self.weights_list.append((weights, 1))
                 else:
                     self.weights_list[-1] = (weights, self.weights_list[-1][1] + 1)
@@ -125,11 +126,12 @@ class AveragePerceptron:
 
         for i in range(EPOCHS):
             index = 0
-            for row in train:
+            train_shuffled, y_shuffled = shuffle(train, y)
+            for row in train_shuffled:
                 row = row[:,np.newaxis]
                 prediction = np.sign(np.dot(weights.T, row))
-                if y[index] != prediction:
-                    weights = weights + LEARNING_RATE * (y[index] * row)
+                if y_shuffled[index] != prediction:
+                    weights = weights + LEARNING_RATE * (y_shuffled[index] * row)
 
                 self.average += weights
                 index += 1
