@@ -40,7 +40,7 @@ def read_csv():
     return train, test, y, y_test
 
 def calculate_error_std(X, y, weights):
-    predictions = np.sign(np.dot(X, weights))
+    predictions = np.sign(np.dot(X, weights[1:]))
     errors = 0
     for i in range(X.shape[0]):
         if predictions[i] != y[i]:
@@ -51,7 +51,7 @@ def calculate_error_std(X, y, weights):
 def calculate_error_voted(X, y, weights):
     sum = np.zeros((X.shape[0],1))
     for tuple in weights:
-        sum = sum + tuple[1] * np.sign(np.dot(X, tuple[0]))
+        sum = sum + tuple[1] * np.sign(np.dot(X, tuple[0][1:]))
 
     predictions = np.sign(sum)
     errors = 0
@@ -62,7 +62,7 @@ def calculate_error_voted(X, y, weights):
     return errors / X.shape[0]
 
 def calculate_error_average(X, y, average):
-    predictions = np.sign(np.dot(X, average))
+    predictions = np.sign(np.dot(X, average[1:]))
     errors = 0
     for i in range(X.shape[0]):
         if predictions[i] != y[i]:
@@ -81,33 +81,31 @@ class Perceptron:
         self.weights_list = []
 
     def fit(self, train, y):
-        weights = np.zeros((train.shape[1], 1))
+        weights = np.zeros((train.shape[1] + 1, 1))
         self.weights_list.append(weights)
 
         for i in range(EPOCHS):
-            index = 0
             train_shuffled, y_shuffled = shuffle(train, y)
-            for row in train_shuffled:
+            train_shuffled = np.c_[np.ones(train_shuffled.shape[0]), train_shuffled]
+            for index, row in enumerate(train_shuffled):
                 row = row[:,np.newaxis]
                 prediction = np.dot(weights.T, row)
                 if y_shuffled[index][0] * prediction[0][0] <= 0:
                     weights = weights + LEARNING_RATE * (y_shuffled[index] * row)
                     self.weights_list.append(weights)
 
-                index += 1
-
 class VotedPerceptron:
     def __init__(self):
         self.weights_list = []
 
     def fit(self, train, y):
-        weights = np.zeros((train.shape[1], 1))
+        weights = np.zeros((train.shape[1] + 1, 1))
         self.weights_list.append((weights, 1))
 
         for i in range(EPOCHS):
-            index = 0
             train_shuffled, y_shuffled = shuffle(train, y)
-            for row in train_shuffled:
+            train_shuffled = np.c_[np.ones(train_shuffled.shape[0]), train_shuffled]
+            for index, row in enumerate(train_shuffled):
                 row = row[:,np.newaxis]
                 prediction = np.dot(weights.T, row)
                 if y_shuffled[index][0] * prediction[0][0] <= 0:
@@ -116,22 +114,20 @@ class VotedPerceptron:
                 else:
                     self.weights_list[-1] = (weights, self.weights_list[-1][1] + 1)
 
-                index += 1
-
 class AveragePerceptron:
     def __init__(self):
         self.average = None
         self.weights_list = []
 
     def fit(self, train, y):
-        weights = np.zeros((train.shape[1], 1))
-        self.average = np.zeros((train.shape[1], 1))
+        weights = np.zeros((train.shape[1] + 1, 1))
+        self.average = np.zeros((train.shape[1] + 1, 1))
         self.weights_list.append(weights)
 
         for i in range(EPOCHS):
-            index = 0
             train_shuffled, y_shuffled = shuffle(train, y)
-            for row in train_shuffled:
+            train_shuffled = np.c_[np.ones(train_shuffled.shape[0]), train_shuffled]
+            for index, row in enumerate(train_shuffled):
                 row = row[:,np.newaxis]
                 prediction = np.dot(weights.T, row)
                 if y_shuffled[index][0] * prediction[0][0] <= 0:
@@ -139,7 +135,6 @@ class AveragePerceptron:
                     self.weights_list.append(weights)
 
                 self.average += weights
-                index += 1
 
 if __name__ == "__main__":
     # Standard Perceptron
@@ -150,7 +145,7 @@ if __name__ == "__main__":
     learned_weights = p.weights_list[-1]
     test_error = calculate_error_std(test, y_test, learned_weights)
     print(f"Test Error: {test_error*100}%")
-    print(f"Learned Weight Vector: {learned_weights.T}")
+    print(f"Learned Weight Vector: {learned_weights[1:].T}")
     print("\r\n")
 
     # Voted Perceptron
@@ -167,9 +162,9 @@ if __name__ == "__main__":
     ### WRITE TO FILE ###
     #####################
 
-    # with open('distinct_weights.txt', 'w') as f:
-    #     for item in vp.weights_list:
-    #         f.write(f"{item[0].T[0][0]},{item[0].T[0][1]},{item[0].T[0][2]},{item[0].T[0][3]},{item[1]}\n")
+    with open('distinct_weights.txt', 'w') as f:
+        for item in vp.weights_list:
+            f.write(f"{item[0].T[0][1]},{item[0].T[0][2]},{item[0].T[0][3]},{item[0].T[0][4]},{item[1]}\n")
 
     # Average Perceptron
     print("Average Perceptron Algorithm")
@@ -178,7 +173,8 @@ if __name__ == "__main__":
     ap.fit(train, y)
     test_error = calculate_error_average(test, y_test, ap.average)
     print(f"Test Error: {test_error*100}%")
-    print(f"Learned Average Vector: {ap.average.T}")
-    print(f"Learned Weight Vector: {ap.weights_list[-1].T}")
+    print(f"Learned Average Vector: {ap.average[1:].T}")
+    print(f"Learned Weight Vector: {ap.weights_list[-1][1:].T}")
+
 
 
