@@ -70,6 +70,8 @@ file: perceptron.py
 
 -> the distinct weight vectors and their counts are stored in distinct_weights.txt and is replaced each time the program is run
 
+-> distinct_weights.txt is formatted in this form (weight1, weight2, weight3, weight4, vote count)
+
 
 
 
