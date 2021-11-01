@@ -154,8 +154,12 @@ if __name__ == "__main__":
     vp = VotedPerceptron()
     vp.fit(train, y)
     test_error = calculate_error_voted(test, y_test, vp.weights_list)
+    train_error = calculate_error_voted(train, y, vp.weights_list)
+    print(f"Correctly Predicted Training Examples: {int(872 - train_error*872)} out of 872")
+    print(f"Train Error: {train_error*100}%")
     print(f"Test Error: {test_error*100}%")
     print(f"Distinct Weight Vectors: {len(vp.weights_list)}")
+    print(f"Writing weight vectors and counts to distinct_weights.txt. Open file to view weight vectors.")
     print("\r\n")
 
     #####################
