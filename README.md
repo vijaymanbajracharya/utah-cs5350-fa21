@@ -3,6 +3,8 @@ Machine Learning
 
 This is a machine learning library developed by Vijay Bajracharya for CS5350/6350 in University of Utah
 
+ALL run.sh FILES ARE LOCATED WITHIN THEIR SUB-DIRECTORIES
+
 Specific Instructions to modify python scripts for testing purposes (Assignemnt 2)
 
 All of the scripts have comment blocks to indicate code that was used in performing experiments for the written report.
