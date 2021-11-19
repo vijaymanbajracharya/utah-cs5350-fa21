@@ -118,7 +118,7 @@ class svm_dual:
             self.G = np.zeros((X.shape[0],X.shape[0]))
             for i in range(X.shape[0]):
                 for j in range(X.shape[0]):
-                    self.G[i,j] = gaussian_kernel(X[i], X[j])
+                    self.G[i,j] = gaussian_kernel(X[i], X[j], self.gamma)
 
             self.G = self.G * np.dot(y, y.T)
        
@@ -215,6 +215,11 @@ if __name__ == "__main__":
     # svm dual w/ Gaussian Kernel #
     ############################### 
     G = [0.1, 0.5, 1, 5, 100]
+    alphas_01 = None
+    alphas_05 = None
+    alphas_1 = None
+    alphas_5 = None
+    alphas_100 = None
     print("SVM Dual Domain w/ Gaussian Kernel: This will take a few minutes to complete\r\n")
     for param in C:
         for gamma in G:
@@ -226,6 +231,23 @@ if __name__ == "__main__":
             print(f"Recovered Bias: {model.bias}")
             print(f"Train Error: {round(model.predict(train, y) * 100, 3)}%")
             print(f"Test Error: {round(model.predict(test, y_test) * 100, 3)}%")
+            if param == 500/873 and gamma == 0.1:
+                alphas_01 = model.alphas.copy()
+            if param == 500/873 and gamma == 0.5:
+                alphas_05 = model.alphas.copy()
+            if param == 500/873 and gamma == 1:
+                alphas_1 = model.alphas.copy()
+            if param == 500/873 and gamma == 5:
+                alphas_5 = model.alphas.copy() 
+            if param == 500/873 and gamma == 100:
+                alphas_100 = model.alphas.copy()   
+            print(f"No. Support Vectors: {model.alphas.shape[0] - np.count_nonzero(model.alphas==0)}")
             print("\r\n")
 
+    # Find overlapped alphas
+    print(f"Overlap between 0.1 and 0.5: {np.intersect1d(alphas_01, alphas_05).shape[0]}")
+    print(f"Overlap between 0.5 and 1: {np.intersect1d(alphas_05, alphas_1).shape[0]}")
+    print(f"Overlap between 1 and 5: {np.intersect1d(alphas_1, alphas_5).shape[0]}")
+    print(f"Overlap between 5 and 100: {np.intersect1d(alphas_5, alphas_100).shape[0]}")
+    
 
