@@ -74,6 +74,16 @@ file: perceptron.py
 
 -> distinct_weights.txt is formatted in this form (weight1, weight2, weight3, weight4, vote count)
 
+###################
+SVM Primal and Dual
+###################
+
+file: svm.py
+
+-> run both primal and dual with the run.sh shell script
+
+-> shell script might need to be given permissions to execute using chmod u+x run.sh
+
 
 
 
