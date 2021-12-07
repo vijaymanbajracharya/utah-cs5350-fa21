@@ -50,9 +50,6 @@ def shuffle(X, y):
 def sigmoid(x):
     return 1 / (1 + np.exp(-x))
 
-def sigmoid_derivative(x):
-    return np.exp(-x) / (1+np.exp(-x))**2
-
 class ThreeLayerNN:
     def __init__(self, input_dim, hidden_dim, output_dim, weight_init='rand'):
         self.input_dim = input_dim
