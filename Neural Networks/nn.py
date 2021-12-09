@@ -144,6 +144,7 @@ if __name__ == "__main__":
 
     hidden_dim_list = [5, 10, 25, 50, 100]
 
+    print(f"Random Normal Initializations")
     for dim in hidden_dim_list:
         # Initialize Model
         model = ThreeLayerNN(4, dim, 1, weight_init='rand')
@@ -161,6 +162,7 @@ if __name__ == "__main__":
         print(f"Test Error: {test_error * 100}%")
         print(f"\r\n")
 
+    print(f"Zero Initializations")
     for dim in hidden_dim_list:
         # Initialize Model
         model = ThreeLayerNN(4, dim, 1, weight_init='zero')
