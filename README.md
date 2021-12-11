@@ -84,6 +84,16 @@ file: svm.py
 
 -> shell script might need to be given permissions to execute using chmod u+x run.sh
 
+###############
+Neural Networks
+###############
+
+file: nn.py and nn_pytorch.py
+
+-> run both nn.py and nn_pytorch.py with the run.sh shell script
+
+-> the pytorch file may take a few minutes to load initially
+
 
 
 
